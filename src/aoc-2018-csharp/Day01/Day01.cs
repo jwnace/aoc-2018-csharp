@@ -2,36 +2,28 @@
 
 public static class Day01
 {
-    private static readonly string[] Input = File.ReadAllLines("Day01/day01.txt");
+    private static readonly int[] Input = File.ReadAllLines("Day01/day01.txt").Select(int.Parse).ToArray();
 
-    public static int Part1()
-    {
-        var temp = Input.Select(int.Parse);
-
-        return temp.Sum(x => x);
-        
-    }
+    public static int Part1() => Input.Sum(x => x);
 
     public static int Part2()
     {
-        var temp = Input.Select(int.Parse);
-
         var knownValues = new List<int>();
-        var frequency = 0;
-        
-        while(true)
-        foreach(var t in temp)
+        var value = 0;
+
+        while (true)
         {
-            frequency = frequency + t;
-
-            if (knownValues.Contains(frequency))
+            foreach (var change in Input)
             {
-                return frequency;
+                value += change;
+
+                if (knownValues.Contains(value))
+                {
+                    return value;
+                }
+
+                knownValues.Add(value);
             }
-
-            knownValues.Add(frequency);
         }
-
-        return 0;
     }
 }
