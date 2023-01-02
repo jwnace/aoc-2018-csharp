@@ -8,21 +8,10 @@ public static class Day02
 
     public static int Part1()
     {
-        var query1 = Input.Select(line =>
-                line.GroupBy(c => c)
-                    .Select(g => new { Letter = g.Key, Count = g.Count() })
-                    .Where(g => g.Count == 2)
-                    .ToList())
-            .Count(x => x.Count > 0);
+        var count1 = Input.Count(LineHasExactlyNOccurrencesOfAnyLetter(2));
+        var count2 = Input.Count(LineHasExactlyNOccurrencesOfAnyLetter(3));
 
-        var query2 = Input.Select(line =>
-                line.GroupBy(c => c)
-                    .Select(g => new { Letter = g.Key, Count = g.Count() })
-                    .Where(g => g.Count == 3)
-                    .ToList())
-            .Count(x => x.Count > 0);
-
-        return query1 * query2;
+        return count1 * count2;
     }
 
     public static string Part2()
@@ -43,13 +32,11 @@ public static class Day02
         return "couldn't find a solution";
     }
 
+    private static Func<string, bool> LineHasExactlyNOccurrencesOfAnyLetter(int count) =>
+        line => line.GroupBy(c => c).Select(g => new { Letter = g.Key, Count = g.Count() }).Any(g => g.Count == count);
+
     private static string GetCommonLetters(string a, string b)
     {
-        if (a.Length != b.Length)
-        {
-            throw new InvalidOperationException("the strings must be the same length");
-        }
-
         var builder = new StringBuilder();
 
         for (var i = 0; i < a.Length; i++)
