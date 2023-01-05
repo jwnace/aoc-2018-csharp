@@ -3,7 +3,7 @@ global using aoc_2018_csharp.Day02;
 global using aoc_2018_csharp.Day03;
 global using aoc_2018_csharp.Day04;
 global using aoc_2018_csharp.Day05;
-// global using aoc_2018_csharp.Day06;
+global using aoc_2018_csharp.Day06;
 // global using aoc_2018_csharp.Day07;
 // global using aoc_2018_csharp.Day08;
 // global using aoc_2018_csharp.Day09;
