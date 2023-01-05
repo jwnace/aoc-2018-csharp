@@ -6,31 +6,19 @@ public static class Day03
 
     public static int Part1()
     {
-        var result = 0;
-        var claims = GetClaims();
-
-        for (var i = 0; i < claims.Count - 1; i++)
-        {
-            for (var j = i + 1; j < claims.Count; j++)
-            {
-                var first = claims[i];
-                var second = claims[j];
-
-                if (first.Overlaps(second))
-                {
-                    result += first.GetOverlappingArea(second);
-                }
-            }
-        }
-        
-        return result;
+        var grid = GetGrid();
+        return grid.Count(x => x.Value > 1);
     }
-    
-    public static int Part2() => 2;
 
-    private static List<Claim> GetClaims()
+    public static int Part2()
     {
-        var claims = new List<Claim>();
+        var claims = GetClaims();
+        return claims.Single(claim => claims.Count(claim.Overlaps) == 1).Id;
+    }
+
+    private static Dictionary<(int X, int Y), int> GetGrid()
+    {
+        var grid = new Dictionary<(int X, int Y), int>();
 
         foreach (var line in Input)
         {
@@ -40,13 +28,39 @@ public static class Day03
             var (startX, startY) = (start[0], start[1]);
             var (endX, endY) = (startX + size[0], startY + size[1]);
 
-            claims.Add(new Claim(startX, startY, endX, endY));
+            for (var x = startX; x < endX; x++)
+            {
+                for (var y = startY; y < endY; y++)
+                {
+                    var value = grid.TryGetValue((x, y), out var v) ? v : 0;
+                    grid[(x, y)] = value + 1;
+                }
+            }
+        }
+
+        return grid;
+    }
+
+    private static List<Claim> GetClaims()
+    {
+        var claims = new List<Claim>();
+
+        foreach (var line in Input)
+        {
+            var values = line.Split(' ');
+            var id = int.Parse(values[0][1..]);
+            var start = values[2][..^1].Split(',').Select(int.Parse).ToArray();
+            var size = values[3].Split('x').Select(int.Parse).ToArray();
+            var (startX, startY) = (start[0], start[1]);
+            var (endX, endY) = (startX + size[0], startY + size[1]);
+
+            claims.Add(new Claim(id, startX, startY, endX, endY));
         }
 
         return claims;
     }
 
-    private record Claim(int StartX, int StartY, int EndX, int EndY)
+    private record Claim(int Id, int StartX, int StartY, int EndX, int EndY)
     {
         public bool Overlaps(Claim other)
         {
@@ -61,19 +75,6 @@ public static class Day03
             }
 
             return true;
-        }
-
-        public int GetOverlappingArea(Claim other)
-        {
-            var startX = Math.Max(StartX, other.StartX);
-            var endX = Math.Min(EndX, other.EndX);
-            var startY = Math.Max(StartY, other.StartY);
-            var endY = Math.Min(EndY, other.EndY);
-
-            var dx = endX - startX;
-            var dy = endY - startY;
-
-            return dx * dy;
         }
     }
 }
