@@ -22,11 +22,7 @@ public static class Day03
 
         foreach (var line in Input)
         {
-            var values = line.Split(' ');
-            var start = values[2][..^1].Split(',').Select(int.Parse).ToArray();
-            var size = values[3].Split('x').Select(int.Parse).ToArray();
-            var (startX, startY) = (start[0], start[1]);
-            var (endX, endY) = (startX + size[0], startY + size[1]);
+            var (_, startX, startY, endX, endY) = ParseLine(line);
 
             for (var x = startX; x < endX; x++)
             {
@@ -47,34 +43,27 @@ public static class Day03
 
         foreach (var line in Input)
         {
-            var values = line.Split(' ');
-            var id = int.Parse(values[0][1..]);
-            var start = values[2][..^1].Split(',').Select(int.Parse).ToArray();
-            var size = values[3].Split('x').Select(int.Parse).ToArray();
-            var (startX, startY) = (start[0], start[1]);
-            var (endX, endY) = (startX + size[0], startY + size[1]);
-
+            var (id, startX, startY, endX, endY) = ParseLine(line);
             claims.Add(new Claim(id, startX, startY, endX, endY));
         }
 
         return claims;
     }
 
+    private static (int id, int startX, int startY, int endX, int endY) ParseLine(string line)
+    {
+        var values = line.Split(' ');
+        var id = int.Parse(values[0][1..]);
+        var start = values[2][..^1].Split(',').Select(int.Parse).ToArray();
+        var size = values[3].Split('x').Select(int.Parse).ToArray();
+        var (startX, startY) = (start[0], start[1]);
+        var (endX, endY) = (startX + size[0], startY + size[1]);
+        return (id, startX, startY, endX, endY);
+    }
+
     private record Claim(int Id, int StartX, int StartY, int EndX, int EndY)
     {
-        public bool Overlaps(Claim other)
-        {
-            if (EndX <= other.StartX || other.EndX <= StartX)
-            {
-                return false;
-            }
-
-            if (EndY <= other.StartY || other.EndY <= StartY)
-            {
-                return false;
-            }
-
-            return true;
-        }
+        public bool Overlaps(Claim other) => 
+            EndX > other.StartX && other.EndX > StartX && EndY > other.StartY && other.EndY > StartY;
     }
 }
