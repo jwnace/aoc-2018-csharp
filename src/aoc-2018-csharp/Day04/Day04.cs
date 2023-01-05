@@ -6,9 +6,29 @@ public static class Day04
 
     public static int Part1()
     {
+        var guards = GetGuards();
+
+        var guard = guards.MaxBy(g => g.SleepMinutes.Sum(m => m.Value));
+        var minute = guard!.SleepMinutes.MaxBy(m => m.Value).Key;
+
+        return guard.Id * minute;
+    }
+    
+    public static int Part2()
+    {
+        var guards = GetGuards();
+
+        var guard = guards.MaxBy(g => g.SleepMinutes.Max(m => m.Value));
+        var minute = guard!.SleepMinutes.MaxBy(m => m.Value).Key;
+
+        return guard.Id * minute;
+    }
+
+    private static List<Guard> GetGuards()
+    {
         var guards = new List<Guard>();
         var guardId = 0;
-        var sleepStartTime = 0;
+        var sleepTime = 0;
 
         foreach (var line in Input)
         {
@@ -18,7 +38,7 @@ public static class Day04
             }
             else if (line.Contains("falls asleep"))
             {
-                sleepStartTime = int.Parse(line.Split(':')[1][..2]);
+                sleepTime = int.Parse(line.Split(':')[1][..2]);
             }
             else if (line.Contains("wakes up"))
             {
@@ -32,25 +52,16 @@ public static class Day04
                     guards.Add(guard);
                 }
 
-                for (var i = sleepStartTime; i < wakeTime; i++)
+                for (var i = sleepTime; i < wakeTime; i++)
                 {
                     var value = guard.SleepMinutes.TryGetValue(i, out var v) ? v : 0;
                     guard.SleepMinutes[i] = value + 1;
                 }
             }
-            else
-            {
-                throw new Exception("something went wrong");
-            }
         }
 
-        var sleepiestGuard = guards.MaxBy(g => g.SleepMinutes.Sum(m => m.Value));
-        var sleepiestMinute = sleepiestGuard.SleepMinutes.MaxBy(m => m.Value).Key;
-
-        return sleepiestGuard.Id * sleepiestMinute;
+        return guards;
     }
-
-    public static int Part2() => 2;
 
     private class Guard
     {
