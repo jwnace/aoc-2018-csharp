@@ -6,14 +6,8 @@ public static class Day06
 
     public static int Part1()
     {
-        // 4345 was too high
-        // 4578 was too high
         var coordinates = GetCoordinates();
-
-        // var candidates = new List<Coordinate>();
-
         var best = 0;
-        var areas = new List<int>();
 
         foreach (var coordinate in coordinates)
         {
@@ -22,27 +16,46 @@ public static class Day06
 
             if (area1 == -1 || area1 != area2)
             {
-                // Console.WriteLine($"area is infinite! coordinate: {coordinate}");
                 continue;
             }
 
-            areas.Add(area1);
             best = Math.Max(best, area1);
-
-            // candidates.Add(coordinate);
         }
 
-        // Console.WriteLine($"candidates: {candidates.Count}");
-        // Console.WriteLine(string.Join(Environment.NewLine, candidates));
-
-        // DrawGrid(coordinates, candidates);
-
-        var query = areas.OrderDescending().ToList();
-        
         return best;
     }
 
-    public static int Part2() => 2;
+    public static int Part2()
+    {
+        var coordinates = GetCoordinates();
+        var region = GetSafeRegion(coordinates);
+
+        return region.Count;
+    }
+
+    private static List<Coordinate> GetSafeRegion(List<Coordinate> coordinates)
+    {
+        var region = new List<Coordinate>();
+        var minX = coordinates.Min(c => c.X);
+        var maxX = coordinates.Max(c => c.X);
+        var minY = coordinates.Min(c => c.Y);
+        var maxY = coordinates.Max(c => c.Y);
+
+        for (var x = minY; x <= maxY; x++)
+        {
+            for (var y = minX; y <= maxX; y++)
+            {
+                var sumOfDistances = coordinates.Sum(c => Math.Abs(c.X - x) + Math.Abs(c.Y - y));
+
+                if (sumOfDistances < 10_000)
+                {
+                    region.Add(new Coordinate(x, y));
+                }
+            }
+        }
+
+        return region;
+    }
 
     private static List<Coordinate> GetCoordinates()
     {
@@ -58,80 +71,47 @@ public static class Day06
         return coordinates;
     }
 
-    private static void DrawGrid(List<Coordinate> grid, List<Coordinate> candidates)
-    {
-        var minX = grid.Min(c => c.X);
-        var maxX = grid.Max(c => c.X);
-        var minY = grid.Min(c => c.Y);
-        var maxY = grid.Max(c => c.Y);
-
-        for (var y = minY; y <= maxY; y++)
-        {
-            for (var x = minX; x <= maxX; x++)
-            {
-                var isCoordinate = grid.Contains(new Coordinate(x, y));
-                var isCandidate = candidates.Contains(new Coordinate(x, y));
-
-                var value = isCoordinate switch
-                {
-                    true when isCandidate => 'F',
-                    true when !isCandidate => 'I',
-                    _ => ' ',
-                };
-
-                Console.Write(value);
-            }
-
-            Console.WriteLine();
-        }
-    }
-
     private static int GetArea(Coordinate coordinate, List<Coordinate> coordinates, int padding)
     {
         var (x, y) = coordinate;
 
-        if (coordinates.Any(c => c.X < x) &&
-            coordinates.Any(c => c.X > x) &&
-            coordinates.Any(c => c.Y < y) &&
-            coordinates.Any(c => c.Y > y))
+        if (!coordinates.Any(c => c.X < x) || !coordinates.Any(c => c.X > x) ||
+            !coordinates.Any(c => c.Y < y) || !coordinates.Any(c => c.Y > y))
         {
-            // TODO: calculate the area for this (x, y) coordinate
-            var area = 0;
-
-            var minX = coordinates.Min(c => c.X) - padding;
-            var maxX = coordinates.Max(c => c.X) + padding;
-            var minY = coordinates.Min(c => c.Y) - padding;
-            var maxY = coordinates.Max(c => c.Y) + padding;
-
-            for (var i = minY; i <= maxY; i++)
-            {
-                for (var j = minX; j <= maxX; j++)
-                {
-                    var temp = GetClosestCoordinate(i, j, coordinates);
-
-                    if (temp == coordinate)
-                    {
-                        area++;
-                    }
-                }
-            }
-
-            return area;
+            return -1;
         }
 
-        return -1;
+        var area = 0;
+
+        var minX = coordinates.Min(c => c.X) - padding;
+        var maxX = coordinates.Max(c => c.X) + padding;
+        var minY = coordinates.Min(c => c.Y) - padding;
+        var maxY = coordinates.Max(c => c.Y) + padding;
+
+        for (var i = minY; i <= maxY; i++)
+        {
+            for (var j = minX; j <= maxX; j++)
+            {
+                var temp = GetClosestCoordinate(new Coordinate(i, j), coordinates);
+
+                if (temp == coordinate)
+                {
+                    area++;
+                }
+            }
+        }
+
+        return area;
     }
 
-    private static Coordinate? GetClosestCoordinate(int x, int y, List<Coordinate> coordinates)
+    private static Coordinate? GetClosestCoordinate(Coordinate coordinate, List<Coordinate> coordinates)
     {
-        var minDistance = coordinates.Min(c => Math.Abs(c.X - x) + Math.Abs(c.Y - y));
+        var (x, y) = coordinate;
 
-        // var temp = coordinates
-        // .Select(c => new {Coordinate = c, Distance = Math.Abs(c.X - x) + Math.Abs(c.Y - y)})
-        // .OrderBy(c => c.Distance)
-        // .ToList();
-
-        var query = coordinates.Where(c => Math.Abs(c.X - x) + Math.Abs(c.Y - y) == minDistance).ToList();
+        var query = coordinates
+            .GroupBy(c => Math.Abs(c.X - x) + Math.Abs(c.Y - y))
+            .OrderBy(g => g.Key)
+            .First();
 
         return query.Count() == 1 ? query.First() : null;
     }
