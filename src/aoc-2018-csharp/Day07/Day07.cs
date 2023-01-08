@@ -8,39 +8,61 @@ public static class Day07
 
     public static string Part1()
     {
-        var steps = GetSteps();
-        var queue = new PriorityQueue<Step, char>();
-        var result = new StringBuilder();
-
-        if (steps.Any(step => step.IsAvailable))
-        {
-            var availableSteps = steps.Where(step => step.IsAvailable).ToList();
-
-            foreach (var step in availableSteps)
-            {
-                queue.Enqueue(step, step.Id);
-            }
-        }
-
-        while (queue.Count > 0)
-        {
-            var node = queue.Dequeue();
-            node.IsComplete = true;
-
-            result.Append(node.Id);
-
-            var newAvailableSteps = steps.Where(step => step.Prerequisites.Contains(node) && step.IsAvailable).ToList();
-
-            foreach (var step in newAvailableSteps)
-            {
-                queue.Enqueue(step, step.Id);
-            }
-        }
-
-        return result.ToString();
+        var result = DoWork(1);
+        return string.Join(null, result.Select(x => x.StepId));
     }
 
-    public static int Part2() => 2;
+    public static int Part2()
+    {
+        var result = DoWork(5);
+        return result.Max(x => x.CompletionTime) + 1;
+    }
+
+    private static List<(char StepId, int CompletionTime)> DoWork(int workerCount)
+    {
+        var result = new List<(char StepId, int CompletionTime)>();
+        var steps = GetSteps();
+        var workers = GetWorkers(workerCount);
+
+        for (var time = 0; time < int.MaxValue; time++)
+        {
+            if (steps.All(step => step.IsComplete(time)))
+            {
+                break;
+            }
+
+            var availableWorkers = workers.Where(worker => worker.IsAvailable(time)).ToList();
+
+            foreach (var worker in availableWorkers)
+            {
+                var nextStep = steps.Where(step => step.IsAvailable(time)).MinBy(step => step.Id);
+
+                if (nextStep is null)
+                {
+                    break;
+                }
+
+                var completionTime = time + 60 + nextStep.Id - 'A';
+                nextStep.StartProgress(completionTime);
+                worker.StartWork(completionTime);
+                result.Add((nextStep.Id, completionTime));
+            }
+        }
+
+        return result;
+    }
+
+    private static List<Worker> GetWorkers(int workerCount)
+    {
+        var workers = new List<Worker>();
+
+        for (var i = 0; i < workerCount; i++)
+        {
+            workers.Add(new Worker());
+        }
+
+        return workers;
+    }
 
     private static List<Step> GetSteps()
     {
@@ -76,9 +98,10 @@ public static class Day07
 
     private class Step
     {
+        private bool _isInProgress;
+        private int _completionTime = int.MaxValue;
+
         public char Id { get; }
-        public bool IsComplete { get; set; }
-        public bool IsAvailable => IsComplete == false && Prerequisites.All(p => p.IsComplete);
         public List<Step> Prerequisites { get; } = new();
 
         public Step(char id)
@@ -86,17 +109,27 @@ public static class Day07
             Id = id;
         }
 
-        public override string ToString()
+        public void StartProgress(int completionTime)
         {
-            var builder = new StringBuilder();
-            builder.Append($"Id: {Id}");
-
-            if (Prerequisites.Any())
-            {
-                builder.Append($", Prerequisites: {string.Join(',', Prerequisites.Select(p => p.Id))}");
-            }
-
-            return builder.ToString();
+            _isInProgress = true;
+            _completionTime = completionTime;
         }
+
+        public bool IsComplete(int time) => time > _completionTime;
+
+        public bool IsAvailable(int time) =>
+            !_isInProgress && !IsComplete(time) && Prerequisites.All(p => p.IsComplete(time));
+    }
+
+    private class Worker
+    {
+        private int _busyUntilTime = -1;
+
+        public void StartWork(int time)
+        {
+            _busyUntilTime = time;
+        }
+
+        public bool IsAvailable(int time) => time > _busyUntilTime;
     }
 }
