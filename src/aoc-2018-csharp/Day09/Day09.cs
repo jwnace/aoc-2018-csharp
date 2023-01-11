@@ -2,24 +2,18 @@
 
 public static class Day09
 {
-    private static readonly string[] Input = File.ReadAllLines("Day09/day09.txt");
+    public static long Part1() => GetMaxScore(403, 71_920);
 
-    public static int Part1() => GetMaxScore(403, 71_920);
+    public static long Part2() => GetMaxScore(403, 100 * 71_920);
 
-    public static int Part2() => 2;
-    
-    public static int GetMaxScore(int playerCount, int lastMarbleValue)
+    public static long GetMaxScore(int playerCount, int lastMarbleValue)
     {
-        var scores = new int[playerCount];
+        var scores = new long[playerCount];
         Array.Fill(scores, 0);
-
-        var nodes = new List<Node>();
 
         var root = new Node(0);
         root.Next = root;
         root.Previous = root;
-
-        nodes.Add(root);
 
         var currentNode = root;
 
@@ -45,6 +39,7 @@ public static class Day09
             {
                 var left = currentNode.Next;
                 var right = currentNode.Next.Next;
+                
                 var node = new Node(i);
 
                 left.Next = node;
@@ -53,15 +48,13 @@ public static class Day09
                 right.Previous = node;
                 node.Previous = left;
 
-                nodes.Add(node);
-
                 currentNode = node;
             }
         }
 
         return scores.Max();
     }
-    
+
     private class Node
     {
         public int Value { get; }
