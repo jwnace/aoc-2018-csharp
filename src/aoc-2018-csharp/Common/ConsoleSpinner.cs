@@ -12,6 +12,7 @@ internal class ConsoleSpinner
     private readonly int _delay;
     private readonly Timer _timer;
     private int _counter;
+    private bool _stopped;
 
     public ConsoleSpinner(
         string message = "",
@@ -28,19 +29,36 @@ internal class ConsoleSpinner
         _timer = new Timer(_ => Spin());
     }
 
-    public void Start() => _timer.Change(dueTime: TimeSpan.Zero, period: TimeSpan.FromMilliseconds(_delay));
+    public void Start()
+    {
+        // HACK: this needs to be here, otherwise we end up overwriting previous lines
+        Console.WriteLine();
+        _timer.Change(dueTime: TimeSpan.Zero, period: TimeSpan.FromMilliseconds(_delay));
+    }
 
     public void Stop()
     {
+        _stopped = true;
         _timer.Change(dueTime: -1, period: -1);
-        Console.SetCursorPosition(_left, _top);
+
+        var top = _top == Console.BufferHeight - 1 ? _top - 1 : _top;
+
+        Console.SetCursorPosition(_left, top);
     }
 
     private void Spin()
     {
         var elapsed = _stopwatch?.Elapsed.ToString() ?? "";
         var sequence = _stopwatch is null ? Sequence[++_counter % Sequence.Length] : "...";
-        Console.SetCursorPosition(_left, _top);
+
+        var top = _top == Console.BufferHeight - 1 ? _top - 1 : _top;
+
+        if (_stopped)
+        {
+            return;
+        }
+
+        Console.SetCursorPosition(_left, top);
         Console.WriteLine($"{_message}{elapsed}{sequence}");
     }
 }
