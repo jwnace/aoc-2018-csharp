@@ -6,22 +6,32 @@ public static class Day10
 
     public static int Part1()
     {
+        var points = GetPoints();
+
+        return 1;
+    }
+
+    private static List<Point> GetPoints()
+    {
+        var points = new List<Point>();
+
         foreach (var line in Input)
         {
-            var values = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var values = line.Split('<', '>').Select(x => x.Split(',')).ToArray();
 
-            var pX = int.Parse(values[1][..^1]);
-            var pY = int.Parse(values[2][..^1]);
-            var vX = int.Parse(values[4][..^1]);
-            var vY = int.Parse(values[5][..^1]);
+            var pX = int.Parse(values[1][0]);
+            var pY = int.Parse(values[1][1]);
+            var vX = int.Parse(values[3][0]);
+            var vY = int.Parse(values[3][1]);
 
             var position = new Vector(pX, pY);
             var velocity = new Vector(vX, vY);
 
             var point = new Point(position, velocity);
+            points.Add(point);
         }
 
-        return 1;
+        return points;
     }
 
     public static int Part2() => 2;
