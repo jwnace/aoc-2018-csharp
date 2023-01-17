@@ -1,20 +1,38 @@
-﻿namespace aoc_2018_csharp.Day10;
+﻿using System.Text;
+
+namespace aoc_2018_csharp.Day10;
 
 public static class Day10
 {
     private static readonly string[] Input = File.ReadAllLines("Day10/day10.txt");
 
-    public static int Part1()
+    public static string Part1() => Solve().Message;
+
+    public static int Part2() => Solve().Time;
+
+    private static (string Message, int Time) Solve()
     {
         var points = GetPoints();
 
-        DrawGrid(points);
+        for (var i = 1; i < int.MaxValue; i++)
+        {
+            foreach (var point in points)
+            {
+                point.Position.X += point.Velocity.X;
+                point.Position.Y += point.Velocity.Y;
+            }
 
-        return 1;
+            var minY = points.Min(p => p.Position.Y);
+            var maxY = points.Max(p => p.Position.Y);
+
+            if (maxY - minY < 10)
+            {
+                return (DrawGrid(points), i);
+            }
+        }
+
+        return ("", 0);
     }
-
-    public static int Part2() => 2;
-
 
     private static List<Point> GetPoints()
     {
@@ -32,29 +50,37 @@ public static class Day10
             var position = new Vector(pX, pY);
             var velocity = new Vector(vX, vY);
 
-            var point = new Point(position, velocity);
-            points.Add(point);
+            points.Add(new Point(position, velocity));
         }
 
         return points;
     }
 
-    private static void DrawGrid(List<Point> points)
+    private static string DrawGrid(List<Point> points)
     {
         var minX = points.Min(p => p.Position.X);
         var maxX = points.Max(p => p.Position.X);
         var minY = points.Min(p => p.Position.Y);
         var maxY = points.Max(p => p.Position.Y);
 
+        if (maxY - minY > 9)
+        {
+            return "";
+        }
+
+        var builder = new StringBuilder();
+
         for (var y = minY; y <= maxY; y++)
         {
+            builder.Append(Environment.NewLine);
+
             for (var x = minX; x <= maxX; x++)
             {
-                Console.Write(points.Any(p => p.Position.X == x && p.Position.Y == y) ? '#' : '.');
+                builder.Append(points.Any(p => p.Position.X == x && p.Position.Y == y) ? '#' : ' ');
             }
-
-            Console.WriteLine();
         }
+
+        return builder.ToString();
     }
 
     private record Point(Vector Position, Vector Velocity);
@@ -69,13 +95,5 @@ public static class Day10
 
         public int X { get; set; }
         public int Y { get; set; }
-
-        public void Deconstruct(out int x, out int y)
-        {
-            x = X;
-            y = Y;
-        }
-
-        public override string ToString() => $"({X}, {Y})";
     }
 }
