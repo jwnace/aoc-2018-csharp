@@ -8,8 +8,13 @@ public static class Day10
     {
         var points = GetPoints();
 
+        DrawGrid(points);
+
         return 1;
     }
+
+    public static int Part2() => 2;
+
 
     private static List<Point> GetPoints()
     {
@@ -34,7 +39,23 @@ public static class Day10
         return points;
     }
 
-    public static int Part2() => 2;
+    private static void DrawGrid(List<Point> points)
+    {
+        var minX = points.Min(p => p.Position.X);
+        var maxX = points.Max(p => p.Position.X);
+        var minY = points.Min(p => p.Position.Y);
+        var maxY = points.Max(p => p.Position.Y);
+
+        for (var y = minY; y <= maxY; y++)
+        {
+            for (var x = minX; x <= maxX; x++)
+            {
+                Console.Write(points.Any(p => p.Position.X == x && p.Position.Y == y) ? '#' : '.');
+            }
+
+            Console.WriteLine();
+        }
+    }
 
     private record Point(Vector Position, Vector Velocity);
 
