@@ -9,8 +9,9 @@ internal static class Runner
         var stopwatch = Stopwatch.StartNew();
         var spinner = StartSpinner(day, part, stopwatch);
         var result = await Task.Run(callback);
-        spinner.Stop();
+
         stopwatch.Stop();
+        spinner.Stop();
 
         Console.WriteLine($"Day {day.ToString(),2}, Part {part.ToString(),2} {stopwatch.Elapsed} => {result}");
     }
