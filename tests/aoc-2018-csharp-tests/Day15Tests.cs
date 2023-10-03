@@ -5,24 +5,26 @@ namespace aoc_2018_csharp_tests;
 public class Day15Tests
 {
     [Test]
-    public void Part1_Example1()
+    public void Part1_Example()
     {
-        var input =
-            """
-                #######
-                #.G...#
-                #...EG#
-                #.#.#G#
-                #..G#E#
-                #.....#
-                #######
-                """.Split(Environment.NewLine);
+        var input = """
+                    #######
+                    #.G...#
+                    #...EG#
+                    #.#.#G#
+                    #..G#E#
+                    #.....#
+                    #######
+                    """.Split(Environment.NewLine);
 
         Day15.Solve1(input).Should().Be(27730);
     }
 
     [Test]
-    public void Part1_ReturnsCorrectAnswer() => Day15.Part1().Should().Be(190012);
+    public void Part1_ReturnsCorrectAnswer()
+    {
+        Day15.Part1().Should().Be(190012);
+    }
 
     [TestCase(new[]
     {
@@ -82,5 +84,8 @@ public class Day15Tests
     }
 
     [Test]
-    public void Part2_ReturnsCorrectAnswer() => Day15.Part2().Should().Be(34364);
+    public void Part2_ReturnsCorrectAnswer()
+    {
+        Day15.Part2().Should().Be(34364);
+    }
 }
