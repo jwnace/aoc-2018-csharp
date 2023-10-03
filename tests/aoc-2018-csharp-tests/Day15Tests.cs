@@ -17,7 +17,7 @@ public class Day15Tests
                     #######
                     """.Split(Environment.NewLine);
 
-        Day15.Solve1(input).Should().Be(27730);
+        Day15.Solve(input, 1).Should().Be(27730);
     }
 
     [Test]
@@ -80,7 +80,7 @@ public class Day15Tests
     }, 1140)]
     public void Part2_Example(string[] input, int expected)
     {
-        Day15.Solve2(input).Should().Be(expected);
+        Day15.Solve(input, 2).Should().Be(expected);
     }
 
     [Test]
