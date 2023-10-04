@@ -1,4 +1,5 @@
-﻿global using aoc_2018_csharp.Day01;
+﻿global using aoc_2018_csharp.Common;
+global using aoc_2018_csharp.Day01;
 global using aoc_2018_csharp.Day02;
 global using aoc_2018_csharp.Day03;
 global using aoc_2018_csharp.Day04;
@@ -14,3 +15,4 @@ global using aoc_2018_csharp.Day13;
 global using aoc_2018_csharp.Day14;
 global using aoc_2018_csharp.Day15;
 global using aoc_2018_csharp.Day16;
+global using aoc_2018_csharp.Day17;
