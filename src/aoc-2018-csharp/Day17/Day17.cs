@@ -23,25 +23,24 @@ public static class Day17
     private class Solver
     {
         private readonly string[] _input;
-        private char[,] grid;
-        private int maxY = 0;
-        private int minY = int.MaxValue;
+        private readonly char[,] _grid;
+        private int _maxY;
+        private int _minY = int.MaxValue;
 
         public Solver(string[] input)
         {
             _input = input;
+            _grid = new char[3000, 3000];
         }
 
         public int Solve(int part)
         {
-            var x = 3000;
-            var y = 3000;
-
-            grid = new char[x, y];
+            int x;
+            int y;
 
             foreach (var line in _input)
             {
-                var l = line.Split(new[] { '=', ',', '.' });
+                var l = line.Split('=', ',', '.');
 
                 if (l[0] == "x")
                 {
@@ -50,7 +49,7 @@ public static class Day17
                     var len = int.Parse(l[5]);
                     for (var a = y; a <= len; a++)
                     {
-                        grid[x, a] = '#';
+                        _grid[x, a] = '#';
                     }
                 }
                 else
@@ -60,38 +59,38 @@ public static class Day17
                     var len = int.Parse(l[5]);
                     for (var a = x; a <= len; a++)
                     {
-                        grid[a, y] = '#';
+                        _grid[a, y] = '#';
                     }
                 }
 
-                if (y > maxY)
+                if (y > _maxY)
                 {
-                    maxY = y;
+                    _maxY = y;
                 }
 
-                if (y < minY)
+                if (y < _minY)
                 {
-                    minY = y;
+                    _minY = y;
                 }
             }
 
-            var springX = 500;
-            var springY = 0;
+            const int springX = 500;
+            const int springY = 0;
 
             // fill with water
             GoDown(springX, springY);
 
             // count spaces with water
             var t = 0;
-            for (y = minY; y < grid.GetLength(1); y++)
+            for (y = _minY; y < _grid.GetLength(1); y++)
             {
-                for (x = 0; x < grid.GetLength(0); x++)
+                for (x = 0; x < _grid.GetLength(0); x++)
                 {
-                    if (part == 1 && (grid[x, y] == '~' || grid[x, y] == '|'))
+                    if (part == 1 && (_grid[x, y] == '~' || _grid[x, y] == '|'))
                     {
                         t++;
                     }
-                    else if (grid[x,y] == '~')
+                    else if (_grid[x, y] == '~')
                     {
                         t++;
                     }
@@ -103,24 +102,22 @@ public static class Day17
 
         private bool SpaceTaken(int x, int y)
         {
-            return grid[x, y] == '#' || grid[x, y] == '~';
+            return _grid[x, y] == '#' || _grid[x, y] == '~';
         }
 
-        public void GoDown(int x, int y)
+        private void GoDown(int x, int y)
         {
-            grid[x, y] = '|';
-            while (grid[x, y + 1] != '#' && grid[x, y + 1] != '~')
+            _grid[x, y] = '|';
+            while (_grid[x, y + 1] != '#' && _grid[x, y + 1] != '~')
             {
                 y++;
-                if (y > maxY)
+                if (y > _maxY)
                 {
                     return;
                 }
 
-                grid[x, y] = '|';
+                _grid[x, y] = '|';
             }
-
-            ;
 
             do
             {
@@ -137,7 +134,7 @@ public static class Day17
                         break;
                     }
 
-                    grid[minX, y] = '|';
+                    _grid[minX, y] = '|';
 
                     if (SpaceTaken(minX - 1, y))
                     {
@@ -146,7 +143,7 @@ public static class Day17
                 }
 
                 int maxX;
-                for (maxX = x; maxX < grid.GetLength(0); maxX++)
+                for (maxX = x; maxX < _grid.GetLength(0); maxX++)
                 {
                     if (SpaceTaken(maxX, y + 1) == false)
                     {
@@ -155,7 +152,7 @@ public static class Day17
                         break;
                     }
 
-                    grid[maxX, y] = '|';
+                    _grid[maxX, y] = '|';
 
                     if (SpaceTaken(maxX + 1, y))
                     {
@@ -166,7 +163,7 @@ public static class Day17
                 // handle water falling
                 if (goDownLeft)
                 {
-                    if (grid[minX, y] != '|')
+                    if (_grid[minX, y] != '|')
                     {
                         GoDown(minX, y);
                     }
@@ -174,7 +171,7 @@ public static class Day17
 
                 if (goDownRight)
                 {
-                    if (grid[maxX, y] != '|')
+                    if (_grid[maxX, y] != '|')
                     {
                         GoDown(maxX, y);
                     }
@@ -188,7 +185,7 @@ public static class Day17
                 // fill row
                 for (int a = minX; a < maxX + 1; a++)
                 {
-                    grid[a, y] = '~';
+                    _grid[a, y] = '~';
                 }
 
                 y--;
