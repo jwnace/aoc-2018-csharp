@@ -10,22 +10,15 @@ public static class Day17
 
     public static int Part2() => Solve2(Input);
 
-    public static int Solve1(string[] input)
-    {
-        var solver = new Solver(input);
-        return solver.Solve(1);
-    }
+    public static int Solve1(string[] input) => new Solver(input).Solve().Count(x => x.Value is '|' or '~');
 
-    public static int Solve2(string[] input)
-    {
-        var solver = new Solver(input);
-        return solver.Solve(2);
-    }
+    public static int Solve2(string[] input) => new Solver(input).Solve().Count(x => x.Value is '~');
 
     private class Solver
     {
         private readonly string[] _input;
-        private readonly char[,] _grid;
+        private readonly Dictionary<(int X, int Y), char> _grid;
+
         private int _minX = int.MaxValue;
         private int _maxX = int.MinValue;
         private int _maxY = int.MinValue;
@@ -34,15 +27,15 @@ public static class Day17
         public Solver(string[] input)
         {
             _input = input;
-            _grid = new char[3000, 3000];
+            _grid = new Dictionary<(int X, int Y), char>();
         }
 
-        public int Solve(int part)
+        public Dictionary<(int X, int Y), char> Solve()
         {
             ParseInput();
             Fall(500, 0);
 
-            return CountWater(part);
+            return _grid;
         }
 
         private void ParseInput()
@@ -60,7 +53,7 @@ public static class Day17
 
                     for (var i = yStart; i <= yEnd; i++)
                     {
-                        _grid[x, i] = '#';
+                        _grid[(x, i)] = '#';
                     }
 
                     _minX = Math.Min(x - 1, _minX);
@@ -77,7 +70,7 @@ public static class Day17
 
                     for (var i = xStart; i <= xEnd; i++)
                     {
-                        _grid[i, y] = '#';
+                        _grid[(i, y)] = '#';
                     }
 
                     _minX = Math.Min(xStart - 1, _minX);
@@ -93,7 +86,7 @@ public static class Day17
         {
             UpdateCell(x, y, '|');
 
-            while (IsSpaceVacant(x, y + 1))
+            while (SpaceIsVacant(x, y + 1))
             {
                 y++;
 
@@ -114,7 +107,7 @@ public static class Day17
 
                 for (left = x; left >= _minX; left--)
                 {
-                    if (IsSpaceVacant(left, y + 1))
+                    if (SpaceIsVacant(left, y + 1))
                     {
                         leftSideCanFall = true;
                         break;
@@ -122,7 +115,7 @@ public static class Day17
 
                     UpdateCell(left, y, '|');
 
-                    if (IsSpaceTaken(left - 1, y))
+                    if (SpaceIsTaken(left - 1, y))
                     {
                         break;
                     }
@@ -130,7 +123,7 @@ public static class Day17
 
                 for (right = x; right <= _maxX; right++)
                 {
-                    if (IsSpaceVacant(right, y + 1))
+                    if (SpaceIsVacant(right, y + 1))
                     {
                         rightSideCanFall = true;
                         break;
@@ -138,18 +131,18 @@ public static class Day17
 
                     UpdateCell(right, y, '|');
 
-                    if (IsSpaceTaken(right + 1, y))
+                    if (SpaceIsTaken(right + 1, y))
                     {
                         break;
                     }
                 }
 
-                if (leftSideCanFall && _grid[left, y] != '|')
+                if (leftSideCanFall && !SpaceHasFallingWater(left, y))
                 {
                     Fall(left, y);
                 }
 
-                if (rightSideCanFall && _grid[right, y] != '|')
+                if (rightSideCanFall && !SpaceHasFallingWater(right, y))
                 {
                     Fall(right, y);
                 }
@@ -168,32 +161,20 @@ public static class Day17
             }
         }
 
-        private int CountWater(int part)
+        private void UpdateCell(int x, int y, char c)
         {
-            var count = 0;
-
-            for (var x = 0; x <= _maxX; x++)
+            if (x < _minX || x > _maxX || y < _minY || y > _maxY)
             {
-                for (var y = _minY; y <= _maxY; y++)
-                {
-                    if (part == 1 && (_grid[x, y] == '~' || _grid[x, y] == '|'))
-                    {
-                        count++;
-                    }
-                    else if (_grid[x, y] == '~')
-                    {
-                        count++;
-                    }
-                }
+                return;
             }
 
-            return count;
+            _grid[(x, y)] = c;
         }
 
-        private void UpdateCell(int x, int y, char c) => _grid[x, y] = c;
+        private bool SpaceIsVacant(int x, int y) => !SpaceIsTaken(x, y);
 
-        private bool IsSpaceTaken(int x, int y) => _grid[x, y] is '#' or '~';
+        private bool SpaceIsTaken(int x, int y) => _grid.TryGetValue((x, y), out var v) && v is '#' or '~';
 
-        private bool IsSpaceVacant(int x, int y) => !IsSpaceTaken(x, y);
+        private bool SpaceHasFallingWater(int x, int y) => _grid.TryGetValue((x, y), out var v) && v is '|';
     }
 }
