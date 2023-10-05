@@ -1,9 +1,3 @@
-#define DEBUG
-#undef DEBUG
-
-using System.Text;
-using aoc_2018_csharp.Extensions;
-
 namespace aoc_2018_csharp.Day17;
 
 public static class Day17
@@ -16,318 +10,189 @@ public static class Day17
 
     public static int Solve1(string[] input)
     {
-        var grid = BuildGrid(input);
-
-        var minX = grid.Min(g => g.Key.X);
-        var maxX = grid.Max(g => g.Key.X);
-        var minY = grid.Min(g => g.Key.Y);
-        var maxY = grid.Max(g => g.Key.Y);
-
-#if DEBUG
-        Console.SetCursorPosition(0, 0);
-        Console.WriteLine($"x: {minX}..{maxX}, y: {minY}..{maxY}");
-        Console.WriteLine(DrawGrid(grid));
-        //Console.ReadLine();
-#endif
-
-        while (!grid.ContainsKey((500, 1)))
-        {
-            Flow(new Drop(500, 0), grid);
-        }
-
-        Console.WriteLine(DrawGrid(grid));
-
-        return grid.Count(x => x.Key.Y >= minY && x.Key.Y <= maxY && x.Value is '|' or '~');
-    }
-
-    private static void Flow(Drop drop, Dictionary<(int X, int Y), char> grid)
-    {
-        // move down as far as possible
-        while (drop.TryMoveDown(grid, out var d))
-        {
-            drop = d;
-        }
-
-        // if we hit the bottom of the world, don't try to move left or right
-        if (drop.Y >= grid.Keys.Max(x => x.Y))
-        {
-            AddDropToGrid(drop, grid);
-            return;
-        }
-
-        var below = drop with { Y = drop.Y + 1 };
-
-        // if we hit flowing water, don't try to move left or right
-        if (grid.TryGetValue(below, out var v) && v == '|')
-        {
-            AddDropToGrid(drop, grid);
-            return;
-        }
-
-        var canMoveLeft = drop.TryMoveLeft(grid, out _);
-        var canMoveRight = drop.TryMoveRight(grid, out _);
-
-        // if we can't move left or right, we're done
-        if (!canMoveLeft && !canMoveRight)
-        {
-            AddDropToGrid(drop, grid);
-            TryStabilizeRow(drop, grid); // determine if the water at this level is stable
-            return;
-        }
-
-        if (canMoveLeft)
-        {
-            var left = drop;
-
-            while (left.TryMoveLeft(grid, out var l))
-            {
-                left = l;
-            }
-
-            if (!left.TryMoveDown(grid, out _))
-            {
-                AddDropToGrid(left, grid);
-                return;
-            }
-
-            Flow(left, grid);
-            return;
-        }
-
-        var right = drop;
-
-        while (right.TryMoveRight(grid, out var r))
-        {
-            right = r;
-        }
-
-        if (!right.TryMoveDown(grid, out _))
-        {
-            AddDropToGrid(right, grid);
-            return;
-        }
-
-        Flow(right, grid);
-    }
-
-    private static bool TryStabilizeRow(Drop drop, Dictionary<(int X, int Y), char> grid)
-    {
-        // TODO: this logic will likely break if there are two falling columns of water adjacent to each other
-        var left = drop;
-        while (grid.ContainsKey(left))
-        {
-            left = left with { X = left.X - 1 };
-        }
-
-        var right = drop;
-        while (grid.ContainsKey(right))
-        {
-            right = right with { X = right.X + 1 };
-        }
-
-        left = left with { X = left.X + 1 };
-        right = right with { X = right.X - 1 };
-
-        if (grid[left] == '#' && grid[right] == '#')
-        {
-            for (var i = left.X + 1; i < right.X; i++)
-            {
-                grid[(i, drop.Y)] = '~';
-            }
-
-#if DEBUG
-            Console.SetCursorPosition(0, 0);
-            Console.WriteLine(drop);
-            Console.WriteLine(DrawGrid(grid));
-            //Console.ReadLine();
-#endif
-
-            return true;
-        }
-
-        return false;
-    }
-
-    private static void AddDropToGrid(Drop drop, Dictionary<(int X, int Y), char> grid)
-    {
-        // TODO: all water is flowing initially, but it may become stable later
-        grid[drop] = '|';
-
-        var count = grid.Count(x => x.Value is '|' or '~');
-
-        if (count % 100 == 0 || count > 1500)
-        {
-            Console.WriteLine($"{count,6} water tiles");
-        }
-
-#if DEBUG
-        Console.SetCursorPosition(0, 0);
-        Console.WriteLine(drop);
-        Console.WriteLine(DrawGrid(grid));
-        //Console.ReadLine();
-#endif
-    }
-
-    private static string DrawGrid(IReadOnlyDictionary<(int X, int Y), char> grid)
-    {
-        var builder = new StringBuilder();
-        var minX = grid.Min(g => g.Key.X);
-        var maxX = grid.Max(g => g.Key.X);
-        var minY = grid.Min(g => g.Key.Y);
-        var maxY = grid.Max(g => g.Key.Y);
-
-        for (var y = minY; y <= maxY; y++)
-        {
-            for (var x = minX; x <= maxX; x++)
-            {
-                builder.Append(grid.TryGetValue((x, y), out var v) ? v : '.');
-            }
-
-            builder.AppendLine();
-        }
-
-        return builder.ToString();
-    }
-
-    private static Dictionary<(int X, int Y), char> BuildGrid(IEnumerable<string> input)
-    {
-        var grid = new Dictionary<(int X, int Y), char>();
-
-        foreach (var line in input)
-        {
-            var (left, right) = line.Split(", ");
-            var (leftKey, leftValue) = left.Split("=");
-            var (_, rightValue) = right.Split("=");
-            var (rightValueStart, rightValueEnd) = rightValue.Split("..");
-
-            if (leftKey == "x")
-            {
-                var x = int.Parse(leftValue);
-                var y1 = int.Parse(rightValueStart);
-                var y2 = int.Parse(rightValueEnd);
-
-                for (var y = y1; y <= y2; y++)
-                {
-                    // if it doesn't exist, add it
-                    if (!grid.TryGetValue((x, y), out var v))
-                    {
-                        grid.Add((x, y), '#');
-                        continue;
-                    }
-
-                    // if it's already clay, skip it
-                    if (v == '#')
-                    {
-                        continue;
-                    }
-
-                    // if it already exists and it's not clay, wtf?
-                    throw new Exception("wtf");
-                }
-            }
-            else
-            {
-                var y = int.Parse(leftValue);
-                var x1 = int.Parse(rightValueStart);
-                var x2 = int.Parse(rightValueEnd);
-
-                for (var x = x1; x <= x2; x++)
-                {
-                    // if it doesn't exist, add it
-                    if (!grid.TryGetValue((x, y), out var v))
-                    {
-                        grid.Add((x, y), '#');
-                        continue;
-                    }
-
-                    // if it's already clay, skip it
-                    if (v == '#')
-                    {
-                        continue;
-                    }
-
-                    // if it already exists and it's not clay, wtf?
-                    throw new Exception("wtf");
-                }
-            }
-        }
-
-        return grid;
+        var solver = new Solver(input);
+        return solver.Go(1);
     }
 
     public static int Solve2(string[] input)
     {
-        throw new NotImplementedException();
+        var solver = new Solver(input);
+        return solver.Go(2);
     }
 
-    private static HashSet<(int X, int Y)> GetClay(IEnumerable<string> input)
+    private class Solver
     {
-        var clay = new HashSet<(int X, int Y)>();
+        private readonly string[] _input;
+        private char[,] grid;
+        private int maxY = 0;
+        private int minY = int.MaxValue;
 
-        foreach (var line in input)
+        public Solver(string[] input)
         {
-            var (left, right) = line.Split(", ");
-            var (leftKey, leftValue) = left.Split("=");
-            var (_, rightValue) = right.Split("=");
-            var (rightValueStart, rightValueEnd) = rightValue.Split("..");
-
-            if (leftKey == "x")
-            {
-                var x = int.Parse(leftValue);
-                var y1 = int.Parse(rightValueStart);
-                var y2 = int.Parse(rightValueEnd);
-
-                for (var y = y1; y <= y2; y++)
-                {
-                    clay.Add((x, y));
-                }
-            }
-            else
-            {
-                var y = int.Parse(leftValue);
-                var x1 = int.Parse(rightValueStart);
-                var x2 = int.Parse(rightValueEnd);
-
-                for (var x = x1; x <= x2; x++)
-                {
-                    clay.Add((x, y));
-                }
-            }
+            _input = input;
         }
 
-        return clay;
-    }
-
-    private static string DrawGrid(IReadOnlySet<(int X, int Y)> clay, IReadOnlySet<(int X, int Y)> water)
-    {
-        var minX = clay.Min(x => x.X);
-        var maxX = clay.Max(x => x.X);
-        var minY = clay.Min(x => x.Y);
-        var maxY = clay.Max(x => x.Y);
-
-        var builder = new StringBuilder();
-
-        for (var y = minY; y <= maxY; y++)
+        public int Go(int part)
         {
-            for (var x = minX; x <= maxX; x++)
+            var x = 3000;
+            var y = 3000;
+
+            grid = new char[x, y];
+
+            foreach (var line in _input)
             {
-                if (clay.Contains((x, y)))
+                var l = line.Split(new[] { '=', ',', '.' });
+
+                if (l[0] == "x")
                 {
-                    builder.Append('#');
-                }
-                else if (water.Any(w => w.X == x && w.Y == y))
-                {
-                    builder.Append('~');
+                    x = int.Parse(l[1]);
+                    y = int.Parse(l[3]);
+                    var len = int.Parse(l[5]);
+                    for (var a = y; a <= len; a++)
+                    {
+                        grid[x, a] = '#';
+                    }
                 }
                 else
                 {
-                    builder.Append('.');
+                    y = int.Parse(l[1]);
+                    x = int.Parse(l[3]);
+                    var len = int.Parse(l[5]);
+                    for (var a = x; a <= len; a++)
+                    {
+                        grid[a, y] = '#';
+                    }
+                }
+
+                if (y > maxY)
+                {
+                    maxY = y;
+                }
+
+                if (y < minY)
+                {
+                    minY = y;
                 }
             }
 
-            builder.AppendLine();
+            var springX = 500;
+            var springY = 0;
+
+            // fill with water
+            GoDown(springX, springY);
+
+            // count spaces with water
+            var t = 0;
+            for (y = minY; y < grid.GetLength(1); y++)
+            {
+                for (x = 0; x < grid.GetLength(0); x++)
+                {
+                    if (part == 1 && (grid[x, y] == '~' || grid[x, y] == '|'))
+                    {
+                        t++;
+                    }
+                    else if (grid[x,y] == '~')
+                    {
+                        t++;
+                    }
+                }
+            }
+
+            return t;
         }
 
-        return builder.ToString();
+        private bool SpaceTaken(int x, int y)
+        {
+            return grid[x, y] == '#' || grid[x, y] == '~';
+        }
+
+        public void GoDown(int x, int y)
+        {
+            grid[x, y] = '|';
+            while (grid[x, y + 1] != '#' && grid[x, y + 1] != '~')
+            {
+                y++;
+                if (y > maxY)
+                {
+                    return;
+                }
+
+                grid[x, y] = '|';
+            }
+
+            ;
+
+            do
+            {
+                bool goDownLeft = false;
+                bool goDownRight = false;
+
+                // find boundaries
+                int minX;
+                for (minX = x; minX >= 0; minX--)
+                {
+                    if (SpaceTaken(minX, y + 1) == false)
+                    {
+                        goDownLeft = true;
+                        break;
+                    }
+
+                    grid[minX, y] = '|';
+
+                    if (SpaceTaken(minX - 1, y))
+                    {
+                        break;
+                    }
+                }
+
+                int maxX;
+                for (maxX = x; maxX < grid.GetLength(0); maxX++)
+                {
+                    if (SpaceTaken(maxX, y + 1) == false)
+                    {
+                        goDownRight = true;
+
+                        break;
+                    }
+
+                    grid[maxX, y] = '|';
+
+                    if (SpaceTaken(maxX + 1, y))
+                    {
+                        break;
+                    }
+                }
+
+                // handle water falling
+                if (goDownLeft)
+                {
+                    if (grid[minX, y] != '|')
+                    {
+                        GoDown(minX, y);
+                    }
+                }
+
+                if (goDownRight)
+                {
+                    if (grid[maxX, y] != '|')
+                    {
+                        GoDown(maxX, y);
+                    }
+                }
+
+                if (goDownLeft || goDownRight)
+                {
+                    return;
+                }
+
+                // fill row
+                for (int a = minX; a < maxX + 1; a++)
+                {
+                    grid[a, y] = '~';
+                }
+
+                y--;
+            } while (true);
+        }
     }
 }
