@@ -26,6 +26,8 @@ public static class Day17
     {
         private readonly string[] _input;
         private readonly char[,] _grid;
+        private int _minX = int.MaxValue;
+        private int _maxX = int.MinValue;
         private int _maxY = int.MinValue;
         private int _minY = int.MaxValue;
 
@@ -61,6 +63,9 @@ public static class Day17
                         _grid[x, i] = '#';
                     }
 
+                    _minX = Math.Min(x - 1, _minX);
+                    _maxX = Math.Max(x + 1, _maxX);
+
                     _minY = Math.Min(yStart, _minY);
                     _maxY = Math.Max(yEnd, _maxY);
                 }
@@ -74,6 +79,9 @@ public static class Day17
                     {
                         _grid[i, y] = '#';
                     }
+
+                    _minX = Math.Min(xStart - 1, _minX);
+                    _maxX = Math.Max(xEnd + 1, _maxX);
 
                     _minY = Math.Min(y, _minY);
                     _maxY = Math.Max(y, _maxY);
@@ -104,7 +112,7 @@ public static class Day17
                 int left;
                 int right;
 
-                for (left = x; left >= 0; left--)
+                for (left = x; left >= _minX; left--)
                 {
                     if (IsSpaceVacant(left, y + 1))
                     {
@@ -120,7 +128,7 @@ public static class Day17
                     }
                 }
 
-                for (right = x; right < _grid.GetLength(0); right++)
+                for (right = x; right <= _maxX; right++)
                 {
                     if (IsSpaceVacant(right, y + 1))
                     {
@@ -164,9 +172,9 @@ public static class Day17
         {
             var count = 0;
 
-            for (var x = 0; x < _grid.GetLength(0); x++)
+            for (var x = 0; x <= _maxX; x++)
             {
-                for (var y = _minY; y < _grid.GetLength(1); y++)
+                for (var y = _minY; y <= _maxY; y++)
                 {
                     if (part == 1 && (_grid[x, y] == '~' || _grid[x, y] == '|'))
                     {
