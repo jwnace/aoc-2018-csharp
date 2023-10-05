@@ -1,4 +1,5 @@
 using System.Net;
+using System.Runtime.Serialization;
 using System.Text;
 using aoc_2018_csharp.Extensions;
 
@@ -16,190 +17,125 @@ public static class Day17
     {
         var water = new HashSet<(int X, int Y)>();
         var clay = GetClay(input);
+        var seenDown = new HashSet<(int X, int Y)>();
+        var seenLeft = new HashSet<(int X, int Y)>();
+        var seenRight = new HashSet<(int X, int Y)>();
 
-        Console.WriteLine();
+        var minX = clay.Min(x => x.X);
+        var maxX = clay.Max(x => x.X);
+        var minY = clay.Min(x => x.Y);
+        var maxY = clay.Max(x => x.Y);
+
+        Console.WriteLine($"x: {minX}..{maxX}, y: {minY}..{maxY}");
         Console.WriteLine(DrawGrid(clay, water));
-        // //Console.ReadLine();
+        //Console.ReadLine();
 
         while (!water.Contains((500, 1)))
         {
             var drop = new Drop(500, 0);
 
-            Fall(drop, clay, water);
+            DoTheThing(drop, clay, water, seenDown, seenLeft, seenRight);
         }
 
         return 1;
     }
 
-    private static void Fall(Drop drop, HashSet<(int x, int y)> clay, HashSet<(int X, int Y)> water)
+    private static void DoTheThing(
+        Drop drop,
+        IReadOnlySet<(int X, int Y)> clay,
+        HashSet<(int X, int Y)> water,
+        HashSet<(int X, int Y)> seenDown,
+        HashSet<(int X, int Y)> seenLeft,
+        HashSet<(int X, int Y)> seenRight)
     {
-        var canMoveDown = drop.TryMoveDown(clay, water, out var down);
-        var canMoveLeft = drop.TryMoveLeft(clay, water, out var left);
-        var canMoveRight = drop.TryMoveRight(clay, water, out var right);
+        while (drop.TryMoveDown(clay, water, seenDown, out var d))
+        {
+            drop = d;
+        }
 
-        if (!canMoveDown && !canMoveLeft && !canMoveRight)
+        if (!drop.TryMoveLeft(clay, water, seenLeft, out _) && !drop.TryMoveRight(clay, water, seenRight, out _))
         {
             water.Add((drop.X, drop.Y));
+
             Console.WriteLine(drop);
             Console.WriteLine(DrawGrid(clay, water));
             //Console.ReadLine();
+
             return;
         }
 
-        if (canMoveDown)
+        var left = drop;
+
+        while (left.TryMoveLeft(clay, water, seenLeft, out var l))
         {
-            Fall(down, clay, water);
+            left = l;
         }
 
-        if (canMoveLeft)
+        if (left != drop)
         {
-            while (left.TryMoveLeft(clay, water, out left))
+            if (seenLeft.Contains((left.X - 1, left.Y)))
             {
-                if (left.TryMoveDown(clay, water, out left))
+                seenLeft.Add((left.X, left.Y));
+            }
+            else
+            {
+                if (!left.TryMoveDown(clay, water, seenDown, out _))
                 {
-                    Fall(left, clay, water);
+                    // if i can't go left anymore, and i can't go down, and i'm in a column that falls forever...
+                    if (water.Contains((left.X + 1, left.Y + 1)) && !clay.Any(x => x.X == left.X && x.Y > left.Y))
+                    {
+                        seenLeft.Add((left.X, left.Y));
+                        return;
+                    }
+
+                    water.Add((left.X, left.Y));
+
+                    Console.WriteLine(left);
+                    Console.WriteLine(DrawGrid(clay, water));
+                    //Console.ReadLine();
+
                     return;
                 }
 
-                water.Add((left.X, left.Y - 1));
-                Console.WriteLine(left);
-                Console.WriteLine(DrawGrid(clay, water));
-                //Console.ReadLine();
+                DoTheThing(left, clay, water, seenDown, seenLeft, seenRight);
             }
         }
 
-        if (canMoveRight)
+        var right = drop;
+
+        while (right.TryMoveRight(clay, water, seenRight, out var r))
         {
-            while (right.TryMoveRight(clay, water, out right))
+            right = r;
+        }
+
+        if (right != drop)
+        {
+            if (seenRight.Contains((right.X + 1, right.Y)))
             {
-                if (right.TryMoveDown(clay, water, out right))
+                seenRight.Add((right.X, right.Y));
+                return;
+            }
+
+            if (!right.TryMoveDown(clay, water, seenDown, out _))
+            {
+                // if i can't go right anymore, and i can't go down, and i'm in a column that falls forever...
+                if (water.Contains((right.X - 1, right.Y + 1)) && !clay.Any(x => x.X == right.X && x.Y > right.Y))
                 {
-                    Fall(right, clay, water);
+                    seenRight.Add((right.X, right.Y));
                     return;
                 }
 
-                water.Add((right.X, right.Y - 1));
+                water.Add((right.X, right.Y));
+
                 Console.WriteLine(right);
                 Console.WriteLine(DrawGrid(clay, water));
                 //Console.ReadLine();
-            }
-        }
-    }
 
-    // private static void Fall(Drop drop, HashSet<(int x, int y)> clay, HashSet<(int X, int Y)> water)
-    // {
-    //     // move down until we hit clay or water
-    //     while (drop.TryMoveDown(clay, water, out var down))
-    //     {
-    //         drop = down;
-    //     }
-    //
-    //     var left = drop;
-    //
-    //     // move left until we hit clay or there is no clay directly under us
-    //     while (left.TryMoveLeft(clay, water, out left) &&
-    //            (clay.Contains((left.X, left.Y + 1)) || water.Contains((left.X, left.Y + 1))))
-    //     {
-    //         // water.Add((left.X, left.Y));
-    //         // Console.WriteLine(left);
-    //         // Console.WriteLine(DrawGrid(clay, water));
-    //         // //Console.ReadLine();
-    //     }
-    //
-    //     // if there is no clay or water directly under us, fall
-    //     if (!clay.Contains((left.X, left.Y + 1)) && !water.Contains((left.X, left.Y + 1)))
-    //     {
-    //         Fall(left, clay, water);
-    //         return;
-    //     }
-    //
-    //     var right = drop;
-    //
-    //     // move right until we hit clay or there is no clay directly under us
-    //     while (right.TryMoveRight(clay, water, out right) &&
-    //            (clay.Contains((right.X, right.Y + 1)) || water.Contains((right.X, right.Y + 1))))
-    //     {
-    //         // water.Add((right.X, right.Y));
-    //         // Console.WriteLine(right);
-    //         // Console.WriteLine(DrawGrid(clay, water));
-    //         // //Console.ReadLine();
-    //     }
-    //
-    //     // if there is no clay or water directly under us, fall
-    //     if (!clay.Contains((right.X, right.Y + 1)) && !water.Contains((right.X, right.Y + 1)))
-    //     {
-    //         Fall(right, clay, water);
-    //         return;
-    //     }
-    //
-    //     water.Add((drop.X, drop.Y));
-    //     Console.WriteLine(drop);
-    //     Console.WriteLine(DrawGrid(clay, water));
-    //     //Console.ReadLine();
-    // }
-
-    // public static int Solve1(string[] input)
-    // {
-    //     var water = new HashSet<(int X, int Y)>();
-    //     var clay = GetClay(input);
-    //
-    //     Console.WriteLine(DrawGrid(clay, water));
-    //     // Thread.Sleep(1000);
-    //
-    //     var drop = new Drop(500, 0);
-    //     Fill(drop, clay, water);
-    //
-    //     return 1;
-    // }
-
-    private static void Fill(Drop drop, HashSet<(int x, int y)> clay, HashSet<(int X, int Y)> water)
-    {
-        var canMoveDown = drop.TryMoveDown(clay, water, out var down);
-        var canMoveLeft = drop.TryMoveLeft(clay, water, out var left);
-        var canMoveRight = drop.TryMoveRight(clay, water, out var right);
-
-        if (!canMoveDown && !canMoveLeft && !canMoveRight)
-        {
-            return;
-        }
-
-        if (canMoveDown)
-        {
-            water.Add((down.X, down.Y));
-            Console.WriteLine(drop.ToString());
-            Console.WriteLine(DrawGrid(clay, water));
-            //Console.ReadLine();
-
-            Fill(down, clay, water);
-        }
-
-        // if there is no clay below me, don't bother moving left or right since I can fall forever
-        if (clay.Any(c => c.x == drop.X && c.y > drop.Y))
-        {
-            if (canMoveLeft && !water.Contains((left.X, left.Y)))
-            {
-                water.Add((left.X, left.Y));
-                Console.WriteLine(drop.ToString());
-                Console.WriteLine(DrawGrid(clay, water));
-                //Console.ReadLine();
-
-                Fill(left, clay, water);
+                return;
             }
 
-            if (canMoveRight && !water.Contains((right.X, right.Y)))
-            {
-                water.Add((right.X, right.Y));
-                Console.WriteLine(drop.ToString());
-                Console.WriteLine(DrawGrid(clay, water));
-                //Console.ReadLine();
-
-                Fill(right, clay, water);
-            }
+            DoTheThing(right, clay, water, seenDown, seenLeft, seenRight);
         }
-
-        // Console.WriteLine(drop.ToString());
-        // Console.WriteLine(DrawGrid(clay, water));
-        // // Thread.Sleep(2_000);
     }
 
     public static int Solve2(string[] input)
@@ -207,15 +143,15 @@ public static class Day17
         throw new NotImplementedException();
     }
 
-    private static HashSet<(int x, int y)> GetClay(IEnumerable<string> input)
+    private static HashSet<(int X, int Y)> GetClay(IEnumerable<string> input)
     {
-        var clay = new HashSet<(int x, int y)>();
+        var clay = new HashSet<(int X, int Y)>();
 
         foreach (var line in input)
         {
             var (left, right) = line.Split(", ");
             var (leftKey, leftValue) = left.Split("=");
-            var (rightKey, rightValue) = right.Split("=");
+            var (_, rightValue) = right.Split("=");
             var (rightValueStart, rightValueEnd) = rightValue.Split("..");
 
             if (leftKey == "x")
@@ -245,9 +181,12 @@ public static class Day17
         return clay;
     }
 
-    private static string DrawGrid(IReadOnlySet<(int x, int y)> clay, IReadOnlyCollection<(int X, int Y)> water)
+    private static string DrawGrid(IReadOnlySet<(int X, int Y)> clay, IReadOnlySet<(int X, int Y)> water)
     {
-        var (minX, maxX, minY, maxY) = (clay.Min(x => x.x), clay.Max(x => x.x), clay.Min(x => x.y), clay.Max(x => x.y));
+        var minX = clay.Min(x => x.X);
+        var maxX = clay.Max(x => x.X);
+        var minY = clay.Min(x => x.Y);
+        var maxY = clay.Max(x => x.Y);
 
         var builder = new StringBuilder();
 
@@ -273,43 +212,5 @@ public static class Day17
         }
 
         return builder.ToString();
-    }
-
-    private record Drop(int X, int Y)
-    {
-        public bool TryMoveDown(IReadOnlySet<(int x, int y)> clay, IReadOnlySet<(int X, int Y)> water, out Drop newDrop)
-        {
-            var (newX, newY) = (X, Y + 1);
-            var newPosition = (newX, newY);
-            newDrop = new Drop(newX, newY);
-
-            return !clay.Contains(newPosition) &&
-                   !water.Contains(newPosition) &&
-                   newY <= clay.Max(x => x.y);
-        }
-
-        public bool TryMoveLeft(IReadOnlySet<(int x, int y)> clay, IReadOnlySet<(int X, int Y)> water, out Drop newDrop)
-        {
-            var (newX, newY) = (X - 1, Y);
-            var newPosition = (newX, newY);
-            newDrop = new Drop(newX, newY);
-
-            return !clay.Contains(newPosition) &&
-                   !water.Contains(newPosition) &&
-                   (clay.Contains((newX, newY + 1)) || water.Contains((newX, newY+1))) &&
-                   newY < clay.Max(x => x.y);
-        }
-
-        public bool TryMoveRight(IReadOnlySet<(int x, int y)> clay, IReadOnlySet<(int X, int Y)> water, out Drop newDrop)
-        {
-            var (newX, newY) = (X + 1, Y);
-            var newPosition = (newX, newY);
-            newDrop = new Drop(newX, newY);
-
-            return !clay.Contains(newPosition) &&
-                   !water.Contains(newPosition) &&
-                   (clay.Contains((newX, newY + 1)) || water.Contains((newX, newY+1))) &&
-                   newY < clay.Max(x => x.y);
-        }
     }
 }
