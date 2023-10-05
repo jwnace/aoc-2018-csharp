@@ -1,3 +1,5 @@
+using aoc_2018_csharp.Extensions;
+
 namespace aoc_2018_csharp.Day17;
 
 public static class Day17
@@ -24,7 +26,7 @@ public static class Day17
     {
         private readonly string[] _input;
         private readonly char[,] _grid;
-        private int _maxY;
+        private int _maxY = int.MinValue;
         private int _minY = int.MaxValue;
 
         public Solver(string[] input)
@@ -35,161 +37,155 @@ public static class Day17
 
         public int Solve(int part)
         {
-            int x;
-            int y;
+            ParseInput();
+            Fall(500, 0);
 
+            return CountWater(part);
+        }
+
+        private void ParseInput()
+        {
             foreach (var line in _input)
             {
-                var l = line.Split('=', ',', '.');
+                var (leftKey, leftValue, _, rightStart, rightEnd) =
+                    line.Split(new[] { "=", ", ", ".." }, StringSplitOptions.RemoveEmptyEntries);
 
-                if (l[0] == "x")
+                if (leftKey == "x")
                 {
-                    x = int.Parse(l[1]);
-                    y = int.Parse(l[3]);
-                    var len = int.Parse(l[5]);
-                    for (var a = y; a <= len; a++)
+                    var x = int.Parse(leftValue);
+                    var yStart = int.Parse(rightStart);
+                    var yEnd = int.Parse(rightEnd);
+
+                    for (var i = yStart; i <= yEnd; i++)
                     {
-                        _grid[x, a] = '#';
+                        _grid[x, i] = '#';
                     }
+
+                    _minY = Math.Min(yStart, _minY);
+                    _maxY = Math.Max(yEnd, _maxY);
                 }
                 else
                 {
-                    y = int.Parse(l[1]);
-                    x = int.Parse(l[3]);
-                    var len = int.Parse(l[5]);
-                    for (var a = x; a <= len; a++)
+                    var y = int.Parse(leftValue);
+                    var xStart = int.Parse(rightStart);
+                    var xEnd = int.Parse(rightEnd);
+
+                    for (var i = xStart; i <= xEnd; i++)
                     {
-                        _grid[a, y] = '#';
+                        _grid[i, y] = '#';
                     }
-                }
 
-                if (y > _maxY)
-                {
-                    _maxY = y;
-                }
-
-                if (y < _minY)
-                {
-                    _minY = y;
+                    _minY = Math.Min(y, _minY);
+                    _maxY = Math.Max(y, _maxY);
                 }
             }
-
-            const int springX = 500;
-            const int springY = 0;
-
-            // fill with water
-            GoDown(springX, springY);
-
-            // count spaces with water
-            var t = 0;
-            for (y = _minY; y < _grid.GetLength(1); y++)
-            {
-                for (x = 0; x < _grid.GetLength(0); x++)
-                {
-                    if (part == 1 && (_grid[x, y] == '~' || _grid[x, y] == '|'))
-                    {
-                        t++;
-                    }
-                    else if (_grid[x, y] == '~')
-                    {
-                        t++;
-                    }
-                }
-            }
-
-            return t;
         }
 
-        private bool SpaceTaken(int x, int y)
+        private void Fall(int x, int y)
         {
-            return _grid[x, y] == '#' || _grid[x, y] == '~';
-        }
+            UpdateCell(x, y, '|');
 
-        private void GoDown(int x, int y)
-        {
-            _grid[x, y] = '|';
-            while (_grid[x, y + 1] != '#' && _grid[x, y + 1] != '~')
+            while (IsSpaceVacant(x, y + 1))
             {
                 y++;
+
                 if (y > _maxY)
                 {
                     return;
                 }
 
-                _grid[x, y] = '|';
+                UpdateCell(x, y, '|');
             }
 
-            do
+            while (true)
             {
-                bool goDownLeft = false;
-                bool goDownRight = false;
+                var leftSideCanFall = false;
+                var rightSideCanFall = false;
+                int left;
+                int right;
 
-                // find boundaries
-                int minX;
-                for (minX = x; minX >= 0; minX--)
+                for (left = x; left >= 0; left--)
                 {
-                    if (SpaceTaken(minX, y + 1) == false)
+                    if (IsSpaceVacant(left, y + 1))
                     {
-                        goDownLeft = true;
+                        leftSideCanFall = true;
                         break;
                     }
 
-                    _grid[minX, y] = '|';
+                    UpdateCell(left, y, '|');
 
-                    if (SpaceTaken(minX - 1, y))
-                    {
-                        break;
-                    }
-                }
-
-                int maxX;
-                for (maxX = x; maxX < _grid.GetLength(0); maxX++)
-                {
-                    if (SpaceTaken(maxX, y + 1) == false)
-                    {
-                        goDownRight = true;
-
-                        break;
-                    }
-
-                    _grid[maxX, y] = '|';
-
-                    if (SpaceTaken(maxX + 1, y))
+                    if (IsSpaceTaken(left - 1, y))
                     {
                         break;
                     }
                 }
 
-                // handle water falling
-                if (goDownLeft)
+                for (right = x; right < _grid.GetLength(0); right++)
                 {
-                    if (_grid[minX, y] != '|')
+                    if (IsSpaceVacant(right, y + 1))
                     {
-                        GoDown(minX, y);
+                        rightSideCanFall = true;
+                        break;
+                    }
+
+                    UpdateCell(right, y, '|');
+
+                    if (IsSpaceTaken(right + 1, y))
+                    {
+                        break;
                     }
                 }
 
-                if (goDownRight)
+                if (leftSideCanFall && _grid[left, y] != '|')
                 {
-                    if (_grid[maxX, y] != '|')
-                    {
-                        GoDown(maxX, y);
-                    }
+                    Fall(left, y);
                 }
 
-                if (goDownLeft || goDownRight)
+                if (rightSideCanFall && _grid[right, y] != '|')
+                {
+                    Fall(right, y);
+                }
+
+                if (leftSideCanFall || rightSideCanFall)
                 {
                     return;
                 }
 
-                // fill row
-                for (int a = minX; a < maxX + 1; a++)
+                for (var i = left; i <= right; i++)
                 {
-                    _grid[a, y] = '~';
+                    UpdateCell(i, y, '~');
                 }
 
                 y--;
-            } while (true);
+            }
         }
+
+        private int CountWater(int part)
+        {
+            var count = 0;
+
+            for (var x = 0; x < _grid.GetLength(0); x++)
+            {
+                for (var y = _minY; y < _grid.GetLength(1); y++)
+                {
+                    if (part == 1 && (_grid[x, y] == '~' || _grid[x, y] == '|'))
+                    {
+                        count++;
+                    }
+                    else if (_grid[x, y] == '~')
+                    {
+                        count++;
+                    }
+                }
+            }
+
+            return count;
+        }
+
+        private void UpdateCell(int x, int y, char c) => _grid[x, y] = c;
+
+        private bool IsSpaceTaken(int x, int y) => _grid[x, y] is '#' or '~';
+
+        private bool IsSpaceVacant(int x, int y) => !IsSpaceTaken(x, y);
     }
 }

@@ -2,29 +2,38 @@ namespace aoc_2018_csharp.Extensions;
 
 public static class EnumerableExtensions
 {
-    public static void Deconstruct<T>(this IEnumerable<T> enumerable, out T first)
+    public static void Deconstruct<T>(this T[] array, out T first)
     {
-        first = enumerable.First();
+        first = array[0];
     }
 
-    public static void Deconstruct<T>(this IEnumerable<T> enumerable, out T first, out T second)
+    public static void Deconstruct<T>(this T[] array, out T first, out T second)
     {
-        first = enumerable.First();
-        second = enumerable.Skip(1).First();
+        first = array[0];
+        second = array[1];
     }
 
-    public static void Deconstruct<T>(this IEnumerable<T> enumerable, out T first, out T second, out T third)
+    public static void Deconstruct<T>(this T[] array, out T first, out T second, out T third)
     {
-        first = enumerable.First();
-        second = enumerable.Skip(1).First();
-        third = enumerable.Skip(2).First();
+        first = array[0];
+        second = array[1];
+        third = array[2];
     }
 
-    public static void Deconstruct<T>(this IEnumerable<T> enumerable, out T first, out T second, out T third, out T fourth)
+    public static void Deconstruct<T>(this T[] array, out T first, out T second, out T third, out T fourth)
     {
-        first = enumerable.First();
-        second = enumerable.Skip(1).First();
-        third = enumerable.Skip(2).First();
-        fourth = enumerable.Skip(3).First();
+        first = array[0];
+        second = array[1];
+        third = array[2];
+        fourth = array[3];
+    }
+
+    public static void Deconstruct<T>(this T[] array, out T first, out T second, out T third, out T fourth, out T fifth)
+    {
+        first = array[0];
+        second = array[1];
+        third = array[2];
+        fourth = array[3];
+        fifth = array[4];
     }
 }
