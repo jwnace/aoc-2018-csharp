@@ -11,13 +11,13 @@ public static class Day17
     public static int Solve1(string[] input)
     {
         var solver = new Solver(input);
-        return solver.Go(1);
+        return solver.Solve(1);
     }
 
     public static int Solve2(string[] input)
     {
         var solver = new Solver(input);
-        return solver.Go(2);
+        return solver.Solve(2);
     }
 
     private class Solver
@@ -32,7 +32,7 @@ public static class Day17
             _input = input;
         }
 
-        public int Go(int part)
+        public int Solve(int part)
         {
             var x = 3000;
             var y = 3000;
