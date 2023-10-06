@@ -1,6 +1,4 @@
-﻿using aoc_2018_csharp.Common;
-
-Console.ForegroundColor = ConsoleColor.Green;
+﻿Console.ForegroundColor = ConsoleColor.Green;
 
 await Runner.RunPart(01, 1, Day01.Part1);
 await Runner.RunPart(01, 2, Day01.Part2);
@@ -34,8 +32,8 @@ await Runner.RunPart(15, 1, Day15.Part1);
 await Runner.RunPart(15, 2, Day15.Part2);
 await Runner.RunPart(16, 1, Day16.Part1);
 await Runner.RunPart(16, 2, Day16.Part2);
-// await Runner.RunPart(17, 1, Day17.Part1);
-// await Runner.RunPart(17, 2, Day17.Part2);
+await Runner.RunPart(17, 1, Day17.Part1);
+await Runner.RunPart(17, 2, Day17.Part2);
 // await Runner.RunPart(18, 1, Day18.Part1);
 // await Runner.RunPart(18, 2, Day18.Part2);
 // await Runner.RunPart(19, 1, Day19.Part1);
