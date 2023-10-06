@@ -1,16 +1,18 @@
-namespace aoc_2018_csharp.Day16;
+namespace aoc_2018_csharp.Shared;
 
 public class Device
 {
-    public int[] Registers { get; } = new int[4];
+    public int[] Registers { get; }
 
-    public Device()
+    public Device(int numRegisters = 4)
     {
+        Registers = new int[numRegisters];
     }
 
     public Device(int[] registers)
     {
-        registers.CopyTo(Registers, 0);
+        Registers = new int[registers.Length];
+        registers.CopyTo(Registers!, 0);
     }
 
     public void Execute(Instruction instruction)
