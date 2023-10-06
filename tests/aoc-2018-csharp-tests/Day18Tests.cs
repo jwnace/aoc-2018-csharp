@@ -9,32 +9,30 @@ public class Day18Tests
     {
         var input = new[]
         {
-            ""
+            ".#.#...|#.",
+            ".....#|##|",
+            ".|..|...#.",
+            "..|#.....#",
+            "#.#|||#|#|",
+            "...#.||...",
+            ".|....|...",
+            "||...#|.#|",
+            "|.||||..|.",
+            "...#.|..|.",
         };
 
-        Day18.Solve1(input).Should().Be(0);
+        Day18.Solve1(input).Should().Be(1147);
     }
 
     [Test]
     public void Part1_ReturnsCorrectAnswer()
     {
-        Day18.Part1().Should().Be(0);
-    }
-
-    [Test]
-    public void Part2_Example_ReturnsCorrectAnswer()
-    {
-        var input = new[]
-        {
-            ""
-        };
-
-        Day18.Solve2(input).Should().Be(0);
+        Day18.Part1().Should().Be(621205);
     }
 
     [Test]
     public void Part2_ReturnsCorrectAnswer()
     {
-        Day18.Part2().Should().Be(0);
+        Day18.Part2().Should().Be(228490);
     }
 }
