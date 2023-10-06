@@ -21,7 +21,7 @@ public class Day18Tests
             "...#.|..|.",
         };
 
-        Day18.Solve1(input).Should().Be(1147);
+        Day18.Solve(input).Should().Be(1147);
     }
 
     [Test]
