@@ -1,4 +1,5 @@
 using aoc_2018_csharp.Extensions;
+using aoc_2018_csharp.Shared;
 
 namespace aoc_2018_csharp.Day16;
 
