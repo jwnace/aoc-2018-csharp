@@ -25,23 +25,12 @@ public class Day19Tests
     [Test]
     public void Part1_ReturnsCorrectAnswer()
     {
-        Day19.Part1().Should().Be(0);
-    }
-
-    [Test]
-    public void Part2_Example_ReturnsCorrectAnswer()
-    {
-        var input = new[]
-        {
-            "",
-        };
-
-        Day19.Solve1(input).Should().Be(0);
+        Day19.Part1().Should().Be(2047);
     }
 
     [Test]
     public void Part2_ReturnsCorrectAnswer()
     {
-        Day19.Part2().Should().Be(0);
+        Day19.Part2().Should().Be(24033240);
     }
 }

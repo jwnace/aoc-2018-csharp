@@ -30,9 +30,8 @@ public static class Day16
             for (var i = 0; i < 16; i++)
             {
                 var device = new Device(beforeRegisters);
-                var instruction = new Instruction(i, a, b, c);
 
-                device.Execute(instruction);
+                device.ExecuteInstruction(i, a, b, c);
 
                 if (device.Registers.SequenceEqual(afterRegisters))
                 {

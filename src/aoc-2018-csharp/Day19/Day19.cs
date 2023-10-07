@@ -1,3 +1,5 @@
+using aoc_2018_csharp.Shared;
+
 namespace aoc_2018_csharp.Day19;
 
 public static class Day19
@@ -6,15 +8,31 @@ public static class Day19
 
     public static int Part1() => Solve1(Input);
 
-    public static int Part2() => Solve2(Input);
+    public static int Part2() => Solve2();
 
     public static int Solve1(string[] input)
     {
-        throw new NotImplementedException();
+        var device = new Device(6);
+
+        device.RunProgram(input);
+
+        return device.Registers[0];
     }
 
-    public static int Solve2(string[] input)
+    private static int Solve2()
     {
-        throw new NotImplementedException();
+        const int bigNumber = 10551424;
+
+        var result = 0;
+
+        for (var i = 1; i <= bigNumber; i++)
+        {
+            if (bigNumber % i == 0)
+            {
+                result += i;
+            }
+        }
+
+        return result;
     }
 }
