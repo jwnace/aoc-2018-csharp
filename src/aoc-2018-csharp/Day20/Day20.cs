@@ -102,8 +102,6 @@ public static class Day20
                 {
                     var room = rooms.FirstOrDefault(room => room.Row == row && room.Col == col);
 
-                    // for (var r1 = 0; r1 < 3; r1++)
-                    // {
                     for (var c1 = 0; c1 < 3; c1++)
                     {
                         if (room == null)
@@ -119,15 +117,10 @@ public static class Day20
                             builder.Append(baz);
                         }
                     }
-                    // }
-
-                    // builder.AppendLine();
                 }
 
                 builder.AppendLine();
             }
-
-            // builder.AppendLine();
         }
 
         return builder.ToString();
