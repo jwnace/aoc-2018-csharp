@@ -14,9 +14,7 @@ public static class Day20
     {
         var rooms = BuildMap(input);
         var map = DrawMap(rooms);
-
         Console.WriteLine(map);
-
         return 0;
     }
 
@@ -41,37 +39,89 @@ public static class Day20
                 }
                 case 'N':
                 {
-                    var newRoom = new Room(room.Row - 1, room.Col);
+                    var (row, col) = (room.Row - 1, room.Col);
+                    var newRoom = new Room(row, col);
+                    var alreadyExists = rooms.Any(x => x.Row == row && x.Col == col);
+
+                    if (alreadyExists)
+                    {
+                        newRoom = rooms.Single(x => x.Row == row && x.Col == col);
+                    }
+
                     room.North = newRoom;
                     newRoom.South = room;
-                    rooms.Add(newRoom);
+
+                    if (!alreadyExists)
+                    {
+                        rooms.Add(newRoom);
+                    }
+
                     room = newRoom;
                     break;
                 }
                 case 'S':
                 {
-                    var newRoom = new Room(room.Row + 1, room.Col);
+                    var (row, col) = (room.Row + 1, room.Col);
+                    var newRoom = new Room(row, col);
+                    var alreadyExists = rooms.Any(x => x.Row == row && x.Col == col);
+
+                    if (alreadyExists)
+                    {
+                        newRoom = rooms.Single(x => x.Row == row && x.Col == col);
+                    }
+
                     room.South = newRoom;
                     newRoom.North = room;
-                    rooms.Add(newRoom);
+
+                    if (!alreadyExists)
+                    {
+                        rooms.Add(newRoom);
+                    }
+
                     room = newRoom;
                     break;
                 }
                 case 'E':
                 {
-                    var newRoom = new Room(room.Row, room.Col + 1);
+                    var (row, col) = (room.Row, room.Col + 1);
+                    var newRoom = new Room(row, col);
+                    var alreadyExists = rooms.Any(x => x.Row == row && x.Col == col);
+
+                    if (alreadyExists)
+                    {
+                        newRoom = rooms.Single(x => x.Row == row && x.Col == col);
+                    }
+
                     room.East = newRoom;
                     newRoom.West = room;
-                    rooms.Add(newRoom);
+
+                    if (!alreadyExists)
+                    {
+                        rooms.Add(newRoom);
+                    }
+
                     room = newRoom;
                     break;
                 }
                 case 'W':
                 {
-                    var newRoom = new Room(room.Row, room.Col - 1);
+                    var (row, col) = (room.Row, room.Col - 1);
+                    var newRoom = new Room(row, col);
+                    var alreadyExists = rooms.Any(x => x.Row == row && x.Col == col);
+
+                    if (alreadyExists)
+                    {
+                        newRoom = rooms.Single(x => x.Row == row && x.Col == col);
+                    }
+
                     room.West = newRoom;
                     newRoom.East = room;
-                    rooms.Add(newRoom);
+
+                    if (!alreadyExists)
+                    {
+                        rooms.Add(newRoom);
+                    }
+
                     room = newRoom;
                     break;
                 }
