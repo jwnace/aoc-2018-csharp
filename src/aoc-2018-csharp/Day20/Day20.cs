@@ -12,19 +12,36 @@ public static class Day20
 
     public static int Solve1(string input)
     {
+        var rooms = BuildMap(input);
+        var map = DrawMap(rooms);
+
+        Console.WriteLine(map);
+
+        return 0;
+    }
+
+    private static List<Room> BuildMap(string input)
+    {
+        var stack = new Stack<Room>();
         var rooms = new List<Room>();
-        var (row, col) = (0, 0);
-        var room = new Room(row, col);
+        var room = new Room(0, 0);
         rooms.Add(room);
 
-        for (var i = 1; i < input.Length - 1; i++)
+        foreach (var c in input)
         {
-            switch (input[i])
+            switch (c)
             {
+                case '^':
+                {
+                    break;
+                }
+                case '$':
+                {
+                    break;
+                }
                 case 'N':
                 {
-                    row--;
-                    var newRoom = new Room(row, col);
+                    var newRoom = new Room(room.Row - 1, room.Col);
                     room.North = newRoom;
                     newRoom.South = room;
                     rooms.Add(newRoom);
@@ -33,8 +50,7 @@ public static class Day20
                 }
                 case 'S':
                 {
-                    row++;
-                    var newRoom = new Room(row, col);
+                    var newRoom = new Room(room.Row + 1, room.Col);
                     room.South = newRoom;
                     newRoom.North = room;
                     rooms.Add(newRoom);
@@ -43,8 +59,7 @@ public static class Day20
                 }
                 case 'E':
                 {
-                    col++;
-                    var newRoom = new Room(row, col);
+                    var newRoom = new Room(room.Row, room.Col + 1);
                     room.East = newRoom;
                     newRoom.West = room;
                     rooms.Add(newRoom);
@@ -53,8 +68,7 @@ public static class Day20
                 }
                 case 'W':
                 {
-                    col--;
-                    var newRoom = new Room(row, col);
+                    var newRoom = new Room(room.Row, room.Col - 1);
                     room.West = newRoom;
                     newRoom.East = room;
                     rooms.Add(newRoom);
@@ -62,22 +76,28 @@ public static class Day20
                     break;
                 }
                 case '(':
-                    throw new NotImplementedException();
+                {
+                    stack.Push(room);
                     break;
+                }
                 case ')':
-                    throw new NotImplementedException();
+                {
+                    room = stack.Pop();
                     break;
+                }
                 case '|':
-                    throw new NotImplementedException();
+                {
+                    room = stack.Peek();
                     break;
+                }
                 default:
-                    throw new NotImplementedException();
+                {
+                    throw new ArgumentOutOfRangeException(nameof(c), c, null);
+                }
             }
         }
 
-        Console.WriteLine(DrawMap(rooms));
-
-        return 0;
+        return rooms;
     }
 
     public static int Solve2(string input)
@@ -153,7 +173,7 @@ public static class Day20
             builder.AppendLine();
 
             builder.Append(West != null ? '<' : '#');
-            builder.Append('.');
+            builder.Append((Row, Col) == (0, 0) ? 'X' : '.');
             builder.Append(East != null ? '>' : '#');
 
             builder.AppendLine();
