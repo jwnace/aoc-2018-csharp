@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace aoc_2018_csharp.Day20;
+﻿namespace aoc_2018_csharp.Day20;
 
 public static class Day20
 {
@@ -10,60 +8,9 @@ public static class Day20
 
     public static int Part2() => Solve2(Input);
 
-    public static int Solve1(string input)
-    {
-        var rooms = BuildMap(input);
+    public static int Solve1(string input) => BuildMap(input).Max(GetShortestPath);
 
-        return rooms.Max(GetShortestPath);;
-    }
-
-    public static int Solve2(string input)
-    {
-        var rooms = BuildMap(input);
-
-        return rooms.Select(GetShortestPath).Count(x => x >= 1000);
-    }
-
-    private static int GetShortestPath(Room room)
-    {
-        // count how many steps it would take to get from (0, 0) to `room` using BFS
-        var queue = new Queue<(Room room, int steps)>();
-        var visited = new HashSet<Room>();
-        queue.Enqueue((room, 0));
-
-        while (queue.Any())
-        {
-            var (currentRoom, steps) = queue.Dequeue();
-            visited.Add(currentRoom);
-
-            if ((currentRoom.Row, currentRoom.Col) == (0, 0))
-            {
-                return steps;
-            }
-
-            if (currentRoom.North != null && !visited.Contains(currentRoom.North))
-            {
-                queue.Enqueue((currentRoom.North, steps + 1));
-            }
-
-            if (currentRoom.South != null && !visited.Contains(currentRoom.South))
-            {
-                queue.Enqueue((currentRoom.South, steps + 1));
-            }
-
-            if (currentRoom.East != null && !visited.Contains(currentRoom.East))
-            {
-                queue.Enqueue((currentRoom.East, steps + 1));
-            }
-
-            if (currentRoom.West != null && !visited.Contains(currentRoom.West))
-            {
-                queue.Enqueue((currentRoom.West, steps + 1));
-            }
-        }
-
-        throw new Exception("No path found");
-    }
+    private static int Solve2(string input) => BuildMap(input).Select(GetShortestPath).Count(x => x >= 1000);
 
     private static List<Room> BuildMap(string input)
     {
@@ -197,84 +144,43 @@ public static class Day20
         return rooms;
     }
 
-    private static string DrawMap(List<Room> rooms)
+    private static int GetShortestPath(Room room)
     {
-        var minCol = rooms.Min(r => r.Col);
-        var maxCol = rooms.Max(r => r.Col);
-        var minRow = rooms.Min(r => r.Row);
-        var maxRow = rooms.Max(r => r.Row);
+        var queue = new Queue<(Room room, int steps)>();
+        var visited = new HashSet<Room>();
+        queue.Enqueue((room, 0));
 
-        var builder = new StringBuilder();
-
-        for (var row = minRow; row <= maxRow; row++)
+        while (queue.Any())
         {
-            for (var i = 0; i < 3; i++)
+            var (currentRoom, steps) = queue.Dequeue();
+            visited.Add(currentRoom);
+
+            if ((currentRoom.Row, currentRoom.Col) == (0, 0))
             {
-                for (var col = minCol; col <= maxCol; col++)
-                {
-                    var room = rooms.FirstOrDefault(room => room.Row == row && room.Col == col);
+                return steps;
+            }
 
-                    for (var c1 = 0; c1 < 3; c1++)
-                    {
-                        if (room == null)
-                        {
-                            builder.Append(' ');
-                        }
-                        else
-                        {
-                            var roomString = room.ToString();
-                            var foo = roomString.Split(Environment.NewLine);
-                            var bar = foo[i];
-                            var baz = bar[c1];
-                            builder.Append(baz);
-                        }
-                    }
-                }
+            if (currentRoom.North != null && !visited.Contains(currentRoom.North))
+            {
+                queue.Enqueue((currentRoom.North, steps + 1));
+            }
 
-                builder.AppendLine();
+            if (currentRoom.South != null && !visited.Contains(currentRoom.South))
+            {
+                queue.Enqueue((currentRoom.South, steps + 1));
+            }
+
+            if (currentRoom.East != null && !visited.Contains(currentRoom.East))
+            {
+                queue.Enqueue((currentRoom.East, steps + 1));
+            }
+
+            if (currentRoom.West != null && !visited.Contains(currentRoom.West))
+            {
+                queue.Enqueue((currentRoom.West, steps + 1));
             }
         }
 
-        return builder.ToString();
-    }
-
-    private class Room
-    {
-        public int Row { get; }
-        public int Col { get; }
-
-        public Room? North { get; set; }
-        public Room? South { get; set; }
-        public Room? East { get; set; }
-        public Room? West { get; set; }
-
-        public Room(int row, int col)
-        {
-            Row = row;
-            Col = col;
-        }
-
-        public override string ToString()
-        {
-            var builder = new StringBuilder();
-
-            builder.Append('#');
-            builder.Append(North != null ? '^' : '#');
-            builder.Append('#');
-
-            builder.AppendLine();
-
-            builder.Append(West != null ? '<' : '#');
-            builder.Append((Row, Col) == (0, 0) ? 'X' : '.');
-            builder.Append(East != null ? '>' : '#');
-
-            builder.AppendLine();
-
-            builder.Append('#');
-            builder.Append(South != null ? 'v' : '#');
-            builder.Append('#');
-
-            return builder.ToString();
-        }
+        throw new Exception("No path found");
     }
 }
