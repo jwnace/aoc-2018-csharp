@@ -23,8 +23,20 @@ public class Day22Tests
     }
 
     [Test]
+    public void Part2_Example_ReturnsCorrectAnswer()
+    {
+        var input = new[]
+        {
+            "depth: 510",
+            "target: 10,10"
+        };
+
+        Day22.Solve2(input).Should().Be(45);
+    }
+
+    [Test]
     public void Part2_ReturnsCorrectAnswer()
     {
-        Day22.Part2().Should().Be(0);
+        Day22.Part2().Should().Be(1048);
     }
 }
