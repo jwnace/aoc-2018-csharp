@@ -20,15 +20,9 @@ public class Day20Tests
         Day20.Part1().Should().Be(3046);
     }
 
-    [TestCase("")]
-    public void Part2_Example_ReturnsCorrectAnswer(string input)
-    {
-        Day20.Solve1(input).Should().Be(0);
-    }
-
     [Test]
     public void Part2_ReturnsCorrectAnswer()
     {
-        Day20.Part2().Should().Be(0);
+        Day20.Part2().Should().Be(8545);
     }
 }

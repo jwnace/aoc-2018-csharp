@@ -19,7 +19,9 @@ public static class Day20
 
     public static int Solve2(string input)
     {
-        throw new NotImplementedException();
+        var rooms = BuildMap(input);
+
+        return rooms.Select(GetShortestPath).Count(x => x >= 1000);
     }
 
     private static int GetShortestPath(Room room)
