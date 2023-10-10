@@ -13,9 +13,54 @@ public static class Day20
     public static int Solve1(string input)
     {
         var rooms = BuildMap(input);
-        var map = DrawMap(rooms);
-        Console.WriteLine(map);
-        return 0;
+
+        return rooms.Max(GetShortestPath);;
+    }
+
+    public static int Solve2(string input)
+    {
+        throw new NotImplementedException();
+    }
+
+    private static int GetShortestPath(Room room)
+    {
+        // count how many steps it would take to get from (0, 0) to `room` using BFS
+        var queue = new Queue<(Room room, int steps)>();
+        var visited = new HashSet<Room>();
+        queue.Enqueue((room, 0));
+
+        while (queue.Any())
+        {
+            var (currentRoom, steps) = queue.Dequeue();
+            visited.Add(currentRoom);
+
+            if ((currentRoom.Row, currentRoom.Col) == (0, 0))
+            {
+                return steps;
+            }
+
+            if (currentRoom.North != null && !visited.Contains(currentRoom.North))
+            {
+                queue.Enqueue((currentRoom.North, steps + 1));
+            }
+
+            if (currentRoom.South != null && !visited.Contains(currentRoom.South))
+            {
+                queue.Enqueue((currentRoom.South, steps + 1));
+            }
+
+            if (currentRoom.East != null && !visited.Contains(currentRoom.East))
+            {
+                queue.Enqueue((currentRoom.East, steps + 1));
+            }
+
+            if (currentRoom.West != null && !visited.Contains(currentRoom.West))
+            {
+                queue.Enqueue((currentRoom.West, steps + 1));
+            }
+        }
+
+        throw new Exception("No path found");
     }
 
     private static List<Room> BuildMap(string input)
@@ -148,11 +193,6 @@ public static class Day20
         }
 
         return rooms;
-    }
-
-    public static int Solve2(string input)
-    {
-        throw new NotImplementedException();
     }
 
     private static string DrawMap(List<Room> rooms)
