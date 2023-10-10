@@ -18,8 +18,7 @@ public static class Day21
 
             while (true)
             {
-                var register3 = register1 & 255;
-                register5 += register3;
+                register5 += register1 & 255;
                 register5 &= 16777215;
                 register5 *= 65899;
                 register5 &= 16777215;
@@ -29,7 +28,7 @@ public static class Day21
                     break;
                 }
 
-                register3 = 0;
+                var register3 = 0;
 
                 while (true)
                 {
