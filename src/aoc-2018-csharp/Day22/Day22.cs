@@ -33,8 +33,6 @@ public static class Day22
             {
                 for (var y = 0; y <= targetY; y++)
                 {
-                    Console.WriteLine($"current position: ({x}, {y})");
-
                     var geologicIndex = GetGeologicIndex(x, y, targetX, targetY, depth);
                     var erosionLevel = GetErosionLevel(geologicIndex, depth);
                     var type = GetRegionType(erosionLevel);
