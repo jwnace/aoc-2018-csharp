@@ -2,17 +2,16 @@ namespace aoc_2018_csharp.Day21;
 
 public static class Day21
 {
-    private static readonly string[] Input = File.ReadAllLines("Day21/day21.txt");
+    public static int Part1() => Solve(1);
 
-    public static int Part1() => Solve1();
+    public static int Part2() => Solve(int.MaxValue);
 
-    public static int Part2() => Solve2(Input);
-
-    private static int Solve1()
+    private static int Solve(int maxIterations)
     {
+        var seen = new HashSet<int>();
         var register5 = 0;
 
-        while (true)
+        for (var i = 0; i < maxIterations; i++)
         {
             var register1 = register5 | 65536;
             register5 = 4591209;
@@ -48,9 +47,14 @@ public static class Day21
                 register1 = register3;
             }
 
-            return register5;
-        }
-    }
+            if (seen.Contains(register5))
+            {
+                break;
+            }
 
-    private static int Solve2(string[] input) => throw new NotImplementedException();
+            seen.Add(register5);
+        }
+
+        return seen.Last();
+    }
 }
