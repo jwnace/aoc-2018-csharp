@@ -10,7 +10,16 @@ public static class Day25
 
     public static string Part2() => "Merry Christmas!";
 
-    public static int Solve1(string[] input)
+    public static int Solve1(IEnumerable<string> input)
+    {
+        var constellations = ParseInput(input);
+
+        MergeConstellations(constellations);
+
+        return constellations.Count;
+    }
+
+    private static List<Constellation> ParseInput(IEnumerable<string> input)
     {
         var constellations = new List<Constellation>();
 
@@ -24,9 +33,14 @@ public static class Day25
             constellations.Add(constellation);
         }
 
+        return constellations;
+    }
+
+    private static void MergeConstellations(List<Constellation> constellations)
+    {
         var shouldContinue = true;
 
-        while(shouldContinue)
+        while (shouldContinue)
         {
             shouldContinue = false;
 
@@ -46,19 +60,6 @@ public static class Day25
                     }
                 }
             }
-        }
-
-        return constellations.Count;
-    }
-
-    private record Constellation(HashSet<Point> Points);
-
-    private record Point(int X, int Y, int Z, int T)
-    {
-        public bool IsInRange(Point other)
-        {
-            var distance = Math.Abs(X - other.X) + Math.Abs(Y - other.Y) + Math.Abs(Z - other.Z) + Math.Abs(T - other.T);
-            return distance <= 3;
         }
     }
 }
