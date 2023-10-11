@@ -8,7 +8,7 @@ public static partial class Day24
 
     public static int Part1() => Solve1(Input);
 
-    public static int Part2() => Solve2(Input);
+    public static int Part2() => Solve2(Input, 3, int.MaxValue);
 
     public static int Solve1(string input)
     {
@@ -72,9 +72,103 @@ public static partial class Day24
             : infection.Sum(g => g.Units);
     }
 
-    public static int Solve2(string input)
+    public static int Solve2(string input, int minBoost = 0, int maxBoost = 0)
     {
-        throw new NotImplementedException();
+        var sections = input.Split("\n\n");
+        List<Group> immuneSystem = null!;
+        List<Group> infection = null!;
+
+        // var (left, top) = Console.GetCursorPosition();
+
+        for (var boost = minBoost; boost <= maxBoost; boost++)
+        {
+            // Console.SetCursorPosition(left, top);
+            Console.WriteLine($"Boost: {boost}");
+
+            immuneSystem = sections[0].Split("\n").Skip(1).Select(Group.Parse).ToList();
+            infection = sections[1].Split("\n").Skip(1).Select(Group.Parse).ToList();
+
+            immuneSystem.ForEach(g => g.AttackDamage += boost);
+
+            var round = 0;
+
+            // var (left, top) = Console.GetCursorPosition();
+
+            while (immuneSystem.Any(g => g.Units > 0) && infection.Any(g => g.Units > 0))
+            {
+                round++;
+                // Console.SetCursorPosition(left, top);
+                // Console.WriteLine($"Round: {round}");
+
+                if (round > 10_000)
+                {
+                    Console.WriteLine("Too many rounds");
+                    break;
+                }
+
+                var allGroups = immuneSystem.Union(infection)
+                    .OrderByDescending(g => g.EffectivePower)
+                    .ThenByDescending(g => g.Initiative)
+                    .ToList();
+
+                var targets = new Dictionary<Group, Group>();
+
+                foreach (var group in allGroups)
+                {
+                    var potentialTargets = immuneSystem.Contains(group) ? infection : immuneSystem;
+
+                    var target = potentialTargets
+                        // TODO: I don't think the `AttackType` is relevant here...
+                        // .Where(g => g.Units > 0 && g.AttackType != group.AttackType && !targets.ContainsValue(g))
+                        .Where(g => g.Units > 0)
+                        .Where(g => !targets.ContainsValue(g))
+                        .OrderByDescending(g => group.DamageTo(g))
+                        .ThenByDescending(g => g.EffectivePower)
+                        .ThenByDescending(g => g.Initiative)
+                        .FirstOrDefault();
+
+                    // TODO: do I need the `group.DamageTo(target) == 0` check?
+                    if (target is null || group.DamageTo(target) == 0)
+                    {
+                        continue;
+                    }
+
+                    targets.Add(group, target);
+                }
+
+                foreach (var attacker in allGroups.OrderByDescending(g => g.Initiative))
+                {
+                    // TODO: do I need the `attacker.Units > 0` check?
+                    if (attacker.Units > 0 && targets.TryGetValue(attacker, out var target))
+                    {
+                        var damage = attacker.DamageTo(target);
+                        var unitsKilled = Math.Min(damage / target.HitPoints, target.Units);
+                        target.Units -= unitsKilled;
+
+                        if (target.Units <= 0)
+                        {
+                            // we're not sure which group the target is so just try to remove it from both
+                            immuneSystem.Remove(target);
+                            infection.Remove(target);
+                        }
+                    }
+                }
+            }
+
+            if (immuneSystem.Any(g => g.Units > 0) && infection.Any(g => g.Units > 0))
+            {
+                continue;
+            }
+
+            if (immuneSystem.Any(g => g.Units > 0))
+            {
+                break;
+            }
+        }
+
+        return immuneSystem.Any(g => g.Units > 0)
+            ? immuneSystem.Sum(g => g.Units)
+            : infection.Sum(g => g.Units);
     }
 
     private partial class Group
@@ -85,7 +179,8 @@ public static partial class Day24
             string attackType,
             int initiative,
             string[] weaknesses,
-            string[] immunities)
+            string[] immunities,
+            int boost = 0)
         {
             Units = units;
             HitPoints = hitPoints;
@@ -134,7 +229,7 @@ public static partial class Day24
         public int EffectivePower => Units * AttackDamage;
         public int Units { get; set; }
         public int HitPoints { get; }
-        public int AttackDamage { get; }
+        public int AttackDamage { get; set; }
         public string AttackType { get; }
         public int Initiative { get; }
         public string[] Weaknesses { get; }
