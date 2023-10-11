@@ -18,7 +18,7 @@ public class Day24Tests
             4485 units each with 2961 hit points (immune to radiation; weak to fire, cold) with an attack that does 12 slashing damage at initiative 4
             """;
 
-        Day24.Solve1(input).Should().Be(5216);
+        Day24.Solve(input).Should().Be(5216);
     }
 
     [Test]
@@ -41,7 +41,7 @@ public class Day24Tests
             4485 units each with 2961 hit points (immune to radiation; weak to fire, cold) with an attack that does 12 slashing damage at initiative 4
             """;
 
-        Day24.Solve2(input, 0, int.MaxValue).Should().Be(51);
+        Day24.Solve(input, int.MaxValue).Should().Be(51);
     }
 
     [Test]
