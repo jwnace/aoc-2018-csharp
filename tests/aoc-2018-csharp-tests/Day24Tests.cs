@@ -24,7 +24,7 @@ public class Day24Tests
     [Test]
     public void Part1_ReturnsCorrectAnswer()
     {
-        Day24.Part1().Should().Be(0);
+        Day24.Part1().Should().Be(10723);
     }
 
     [Test]
