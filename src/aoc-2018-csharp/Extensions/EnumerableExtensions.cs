@@ -2,11 +2,6 @@ namespace aoc_2018_csharp.Extensions;
 
 public static class EnumerableExtensions
 {
-    public static void Deconstruct<T>(this T[] array, out T first)
-    {
-        first = array[0];
-    }
-
     public static void Deconstruct<T>(this T[] array, out T first, out T second)
     {
         first = array[0];
